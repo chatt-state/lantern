@@ -14,6 +14,7 @@ import { authRoutes } from './auth/routes.js';
 import { metadataRoutes } from './oauth/metadata.js';
 import { oauthRoutes } from './oauth/routes.js';
 import { proxyRoutes } from './proxy/router.js';
+import { webRoutes } from './web/routes.js';
 
 const app = Fastify({
   logger: {
@@ -46,6 +47,9 @@ const sql = getDb(config.databaseUrl);
 
 // Auth routes (login, callback, logout)
 await app.register(authRoutes(sql));
+
+// Web UI — dashboard and navigation
+await app.register(webRoutes(sql));
 
 // OAuth 2.1 + PKCE server (RFC 8414 metadata + RFC 7591 registration + token endpoints)
 await app.register(metadataRoutes());
