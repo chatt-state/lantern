@@ -2,14 +2,14 @@
   "master": {
     "tasks": [
       {
-        "id": 1,
+        "id": "1",
         "title": "Project Setup and Repository Initialization",
         "description": "Initialize the Lantern project repository with proper structure, licensing, and basic configuration files",
         "details": "Create GitHub repository at chatt-state/lantern with Apache-2.0 license. Set up Node.js 22 + TypeScript project structure with package.json, tsconfig.json, .gitignore, and README.md. Initialize basic folder structure: src/, docs/, docker/, tests/. Configure ESLint and Prettier for code quality. Set up GitHub Actions for CI/CD pipeline targeting GHCR for Docker images.",
         "testStrategy": "Verify repository structure, validate package.json dependencies, ensure TypeScript compilation works, test CI/CD pipeline builds successfully",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -18,7 +18,8 @@
             "dependencies": [],
             "details": "Log into GitHub under chatt-state organization, create new repository named 'lantern', select Apache License 2.0 during initialization or add LICENSE file via 'Add file > Create new file' with license template[1][2]. Commit changes with descriptive message.",
             "status": "pending",
-            "testStrategy": "Verify repository exists at chatt-state/lantern, confirm LICENSE file contains Apache-2.0 text and is displayed on repo main page[2]."
+            "testStrategy": "Verify repository exists at chatt-state/lantern, confirm LICENSE file contains Apache-2.0 text and is displayed on repo main page[2].",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -29,7 +30,8 @@
             ],
             "details": "Run 'npm init -y', set engines to Node.js ^22, install TypeScript dev deps (typescript @types/node), create tsconfig.json with strict mode and target ES2022, add .gitignore for node_modules/.env/dist, initialize README.md with project overview.",
             "status": "pending",
-            "testStrategy": "Validate package.json has correct Node version, run 'npx tsc --noEmit' to check TypeScript config, ensure git status is clean."
+            "testStrategy": "Validate package.json has correct Node version, run 'npx tsc --noEmit' to check TypeScript config, ensure git status is clean.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -40,7 +42,8 @@
             ],
             "details": "Create directories: src/, docs/, docker/, tests/. Install ESLint, Prettier, @typescript-eslint/parser/eslint-plugin dev deps. Generate .eslintrc.json with TypeScript rules, .prettierrc with standard config, add scripts to package.json for lint/format.",
             "status": "pending",
-            "testStrategy": "Run 'npm run lint' and 'npm run format' without errors, verify folder structure with 'ls -la', check Prettier/ESLint configs parse sample TS file."
+            "testStrategy": "Run 'npm run lint' and 'npm run format' without errors, verify folder structure with 'ls -la', check Prettier/ESLint configs parse sample TS file.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -51,21 +54,26 @@
             ],
             "details": "Create .github/workflows/ci.yml for lint/test/build on push/PR, docker-build-push.yml for building/pushing Lantern image to GHCR on main/tag. Use Node 22 runner, include steps for install deps, lint, test, Docker build with alpine base.",
             "status": "pending",
-            "testStrategy": "Trigger workflow on push/PR, verify jobs complete successfully, check GHCR for pushed images, validate build artifacts."
+            "testStrategy": "Trigger workflow on push/PR, verify jobs complete successfully, check GHCR for pushed images, validate build artifacts.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 3,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Break down into: 1) GitHub repo creation and licensing, 2) Node.js/TypeScript project initialization with config files, 3) Folder structure and code quality tools setup (ESLint/Prettier), 4) GitHub Actions CI/CD pipeline configuration.",
+        "updatedAt": "2026-03-03T03:56:54.780Z"
       },
       {
-        "id": 2,
+        "id": "2",
         "title": "Database Schema Design and Migration System",
         "description": "Design PostgreSQL database schema for multi-tenant support with institutions, users, departments, and audit logging",
         "details": "Create PostgreSQL 16 schema with tables: institutions, users, departments, group_mappings, audit_logs, oauth_clients, sessions. Implement row-level security for multi-tenant isolation. Set up migration system using node-pg-migrate. Include indexes for performance on user lookups, audit queries, and tenant isolation. Design encrypted credential storage with AES-256-GCM fields.",
         "testStrategy": "Unit tests for migration scripts, validate schema constraints, test row-level security isolation, performance test with sample data",
         "priority": "high",
         "dependencies": [
-          1
+          "1"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -74,7 +82,8 @@
             "dependencies": [],
             "details": "Define tables with appropriate data types, primary/foreign keys, constraints, and initial columns for encrypted credentials using BYTEA for AES-256-GCM. Include tenant_id in all relevant tables for RLS support[1][2].",
             "status": "pending",
-            "testStrategy": "Validate table creation, check constraints, foreign key integrity, and basic insert/select operations"
+            "testStrategy": "Validate table creation, check constraints, foreign key integrity, and basic insert/select operations",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -85,7 +94,8 @@
             ],
             "details": "Use ALTER TABLE ... ENABLE ROW LEVEL SECURITY; and CREATE POLICY with conditions like (institution_id = current_setting('app.current_institution_id')::uuid). Create functions for setting tenant context[1][6].",
             "status": "pending",
-            "testStrategy": "Test cross-tenant isolation by attempting unauthorized access, validate policy enforcement for different user roles"
+            "testStrategy": "Test cross-tenant isolation by attempting unauthorized access, validate policy enforcement for different user roles",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -96,7 +106,8 @@
             ],
             "details": "Install node-pg-migrate, configure database connection, generate migration files for tables from subtask 1, implement up/down functions with proper error handling and validation[1].",
             "status": "pending",
-            "testStrategy": "Run migrations up/down cycles, verify schema matches design, test rollback functionality"
+            "testStrategy": "Run migrations up/down cycles, verify schema matches design, test rollback functionality",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -108,7 +119,8 @@
             ],
             "details": "Create composite indexes on (institution_id, user_id), (created_at, institution_id) for audit_logs, unique indexes on oauth_client identifiers, partial indexes for active sessions[1][2].",
             "status": "pending",
-            "testStrategy": "Measure query performance before/after indexing, validate index usage with EXPLAIN ANALYZE, test with realistic data volumes"
+            "testStrategy": "Measure query performance before/after indexing, validate index usage with EXPLAIN ANALYZE, test with realistic data volumes",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -119,7 +131,8 @@
             ],
             "details": "Create encryption functions using pgcrypto pgp_sym_encrypt, store IV/nonce with ciphertext in BYTEA columns, implement key rotation strategy, add encryption triggers or application-level encryption[1].",
             "status": "pending",
-            "testStrategy": "Validate encryption/decryption roundtrip, test with various data sizes, verify encryption at rest, test key rotation without data loss"
+            "testStrategy": "Validate encryption/decryption roundtrip, test with various data sizes, verify encryption at rest, test key rotation without data loss",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -133,21 +146,26 @@
             ],
             "details": "Write pgTAP tests for RLS policies, migration validation scripts, performance benchmarks, encryption verification, multi-tenant isolation tests with sample data for institutions/users/departments[1][2].",
             "status": "pending",
-            "testStrategy": "Automated CI/CD pipeline tests, load testing with 1000+ records per tenant, security penetration testing for RLS bypass attempts"
+            "testStrategy": "Automated CI/CD pipeline tests, load testing with 1000+ records per tenant, security penetration testing for RLS bypass attempts",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 6,
+        "expansionPrompt": "Divide into: 1) Core tables design (institutions, users, etc.), 2) Row-level security implementation, 3) Migration system setup with node-pg-migrate, 4) Performance indexes, 5) Encrypted credential storage, 6) Testing and validation scripts.",
+        "updatedAt": "2026-03-03T04:00:13.368Z"
       },
       {
-        "id": 3,
+        "id": "3",
         "title": "Fastify Server Foundation with Health Check",
         "description": "Set up Fastify HTTP server with TypeScript, environment configuration, and basic health check endpoint",
         "details": "Initialize Fastify server with TypeScript support, request validation schemas, and error handling. Implement environment variable loading with validation for PORT, BASE_URL, DATABASE_URL, LOG_LEVEL. Create /health endpoint returning server status and database connectivity. Set up structured logging with configurable levels. Configure CORS and security headers.",
         "testStrategy": "Integration tests for server startup, health check endpoint validation, environment variable validation, database connection testing",
         "priority": "high",
         "dependencies": [
-          2
+          "2"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -156,7 +174,8 @@
             "dependencies": [],
             "details": "Create main server file using Fastify with TypeScript. Configure logger, register @fastify/cors and @fastify/helmet plugins. Set up global error handler and request schema validation. Use fastify-plugin pattern for encapsulation.",
             "status": "pending",
-            "testStrategy": "Unit tests for server startup, CORS headers validation, security headers presence, error handler response format"
+            "testStrategy": "Unit tests for server startup, CORS headers validation, security headers presence, error handler response format",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -167,7 +186,8 @@
             ],
             "details": "Use 'dotenv' and 'envalid' libraries to load and validate environment variables. Create config module exporting validated values. Integrate with Fastify logger using pino with level from LOG_LEVEL. Handle missing variables gracefully.",
             "status": "pending",
-            "testStrategy": "Unit tests for env validation with mock process.env, integration tests for invalid/missing vars, logger level configuration verification"
+            "testStrategy": "Unit tests for env validation with mock process.env, integration tests for invalid/missing vars, logger level configuration verification",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -179,21 +199,26 @@
             ],
             "details": "Register fastify-healthcheck plugin with custom checks for database connectivity. Add database health check promise using DATABASE_URL from config. Return JSON with status, uptime, and DB status. Include healthcheck script support.",
             "status": "pending",
-            "testStrategy": "Integration tests for /health endpoint with healthy/unhealthy DB states, response schema validation, probe script execution"
+            "testStrategy": "Integration tests for /health endpoint with healthy/unhealthy DB states, response schema validation, probe script execution",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 4,
+        "recommendedSubtasks": 3,
+        "expansionPrompt": "Split into: 1) Fastify server initialization with TypeScript, 2) Environment configuration and validation, 3) Health check endpoint and structured logging setup.",
+        "updatedAt": "2026-03-03T04:02:07.865Z"
       },
       {
-        "id": 4,
+        "id": "4",
         "title": "Azure Entra ID OIDC Authentication",
         "description": "Implement Azure Entra ID OIDC authentication flow with support for both single-tenant and multi-tenant modes",
         "details": "Implement OIDC client using openid-client library. Create /auth/login redirect to Azure, /auth/callback handler for OIDC response, and /auth/logout for session cleanup. Support both single-tenant (specific tenant ID) and multi-tenant (common endpoint) modes via AZURE_TENANT_ID configuration. Implement session management with secure cookies. Handle Azure AD group claims extraction.",
         "testStrategy": "Mock Azure OIDC responses for unit tests, integration tests with test Azure tenant, validate token parsing and session creation",
         "priority": "high",
         "dependencies": [
-          3
+          "3"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -202,7 +227,8 @@
             "dependencies": [],
             "details": "Install openid-client, create Issuer instance using AZURE_TENANT_ID env var to build discovery URL (common or specific tenant), configure client with client_id, client_secret, redirect_uris. Handle both single-tenant (tenant-specific) and multi-tenant (common) modes dynamically.",
             "status": "pending",
-            "testStrategy": "Unit test client initialization for both tenant modes, validate discovery document fetching and client metadata parsing"
+            "testStrategy": "Unit test client initialization for both tenant modes, validate discovery document fetching and client metadata parsing",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -213,7 +239,8 @@
             ],
             "details": "Login: generate authorization URL with openid-client and redirect. Callback: exchange code for tokens, validate ID token. Logout: clear session cookie and redirect to Azure logout endpoint if configured. Use secure HTTP-only cookies for session storage.",
             "status": "pending",
-            "testStrategy": "Mock OIDC issuer responses, test full auth flow with valid/invalid codes, verify redirects and token exchange"
+            "testStrategy": "Mock OIDC issuer responses, test full auth flow with valid/invalid codes, verify redirects and token exchange",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -224,7 +251,8 @@
             ],
             "details": "If AZURE_TENANT_ID is 'common', use https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration. For specific tenant ID, use https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration. Make tenant selection configurable and validate audience claims accordingly.",
             "status": "pending",
-            "testStrategy": "Test discovery URL construction for both modes, validate token audience and issuer claims match expected tenant"
+            "testStrategy": "Test discovery URL construction for both modes, validate token audience and issuer claims match expected tenant",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -235,7 +263,8 @@
             ],
             "details": "Store minimal user data (sub, tenant, roles) in signed/encrypted session cookie using fastify-cookie or iron-session. Set secure, httpOnly, sameSite=strict flags. Implement session middleware for protected routes. Add session expiry matching token TTL.",
             "status": "pending",
-            "testStrategy": "Test cookie security flags, session signing/verification, expiry handling, and protection against tampering"
+            "testStrategy": "Test cookie security flags, session signing/verification, expiry handling, and protection against tampering",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -246,21 +275,26 @@
             ],
             "details": "Configure Azure app registration to include groups claim (groupMembershipClaims). Parse groups array from token claims. Store in session and database for Task 5/7 integration. Handle group claim overflow via _claim_names/_claim_sources if needed.",
             "status": "pending",
-            "testStrategy": "Mock tokens with various group claim formats, validate parsing and storage, test overflow scenarios"
+            "testStrategy": "Mock tokens with various group claim formats, validate parsing and storage, test overflow scenarios",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 8,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break down: 1) OIDC client setup with openid-client, 2) Login/callback/logout endpoint implementation, 3) Single vs multi-tenant mode handling, 4) Secure session management, 5) Azure AD group claims extraction.",
+        "updatedAt": "2026-03-03T14:01:05.648Z"
       },
       {
-        "id": 5,
+        "id": "5",
         "title": "Microsoft Graph API Integration for Group Sync",
         "description": "Integrate Microsoft Graph API to sync Azure AD groups and map them to Lantern departments",
         "details": "Implement Microsoft Graph client using @azure/msal-node for authentication. Create service to call GET /me/memberOf on user login to retrieve Azure AD groups. Implement group mapping logic using configurable mapping table (azure_group -> department + role). Auto-create departments for unmapped groups. Handle Graph API rate limiting and error scenarios. Store group sync results in database.",
         "testStrategy": "Mock Microsoft Graph API responses, test group mapping logic with various scenarios, validate department auto-creation, test rate limiting handling",
         "priority": "high",
         "dependencies": [
-          4
+          "4"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -269,7 +303,8 @@
             "dependencies": [],
             "details": "Register Azure AD app with Graph permissions (Group.Read.All, User.Read), implement MSAL confidential client with client secret, tenant ID, and app ID. Create auth service for token acquisition on user login.",
             "status": "pending",
-            "testStrategy": "Unit tests for token acquisition, mock Azure AD responses, validate token scopes and expiration handling"
+            "testStrategy": "Unit tests for token acquisition, mock Azure AD responses, validate token scopes and expiration handling",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -280,7 +315,8 @@
             ],
             "details": "Implement Graph client using @azure/msal-node auth provider. Add retry logic for transient errors. Parse group data (id, displayName) and store in session/cache. Handle pagination if needed.",
             "status": "pending",
-            "testStrategy": "Mock Graph API responses with various group sets, test parsing and caching, validate endpoint permissions"
+            "testStrategy": "Mock Graph API responses with various group sets, test parsing and caching, validate endpoint permissions",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -291,7 +327,8 @@
             ],
             "details": "Create database table for mapping (azureGroupId -> departmentId + role). Load mapping on startup. Add service to lookup user departments/roles from groups. Store results in user session and database.",
             "status": "pending",
-            "testStrategy": "Test mapping with valid/invalid groups, multiple group matches, fallback logic, database persistence"
+            "testStrategy": "Test mapping with valid/invalid groups, multiple group matches, fallback logic, database persistence",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -302,21 +339,26 @@
             ],
             "details": "Check if unmapped group exists as department, create if not. Implement exponential backoff for Graph rate limits (429 errors). Log errors and sync failures. Add sync status tracking in database.",
             "status": "pending",
-            "testStrategy": "Test auto-creation flow, simulate rate limiting (429 responses), error recovery, validate department creation and logging"
+            "testStrategy": "Test auto-creation flow, simulate rate limiting (429 responses), error recovery, validate department creation and logging",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Divide into: 1) MSAL authentication setup, 2) Graph API client for group membership, 3) Group-to-department mapping logic, 4) Auto-department creation and error handling.",
+        "updatedAt": "2026-03-03T14:04:15.061Z"
       },
       {
-        "id": 6,
+        "id": "6",
         "title": "OAuth 2.1 + PKCE Server Implementation",
         "description": "Implement OAuth 2.1 authorization server with PKCE support for Claude Desktop/Code authentication",
         "details": "Implement OAuth 2.1 server following RFC 6749 and RFC 7636 (PKCE). Create endpoints: /.well-known/oauth-authorization-server (metadata), /oauth/register (dynamic client registration), /oauth/authorize (authorization with PKCE), /oauth/token (token exchange/refresh), /oauth/revoke. Use HS256 for JWT signing with configurable TTL. Implement refresh token rotation. Store OAuth clients and authorization codes in database.",
         "testStrategy": "OAuth 2.1 compliance testing, PKCE flow validation, JWT token verification, refresh token rotation testing, client registration validation",
         "priority": "high",
         "dependencies": [
-          4
+          "4"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -325,7 +367,8 @@
             "dependencies": [],
             "details": "Create Fastify route returning JSON metadata including issuer, authorization_endpoint, token_endpoint, jwks_uri, scopes_supported, response_types_supported per RFC 8414 and OAuth 2.1 requirements[1][4]",
             "status": "pending",
-            "testStrategy": "Validate JSON structure against OAuth 2.1 discovery spec, test all required metadata fields present and correct"
+            "testStrategy": "Validate JSON structure against OAuth 2.1 discovery spec, test all required metadata fields present and correct",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -336,7 +379,8 @@
             ],
             "details": "Create POST endpoint accepting client_name, redirect_uris, grant_types, response_types. Store clients in database with generated client_id, client_secret (for confidential clients), issue client_id immediately[4]",
             "status": "pending",
-            "testStrategy": "Test client creation with valid/invalid parameters, verify database storage, test client read/update endpoints"
+            "testStrategy": "Test client creation with valid/invalid parameters, verify database storage, test client read/update endpoints",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -348,7 +392,8 @@
             ],
             "details": "Handle GET requests with client_id, redirect_uri, scope, response_type=code, code_challenge, code_challenge_method=S256. Validate PKCE parameters, store authorization codes with code_challenge in database, redirect with code[1][2]",
             "status": "pending",
-            "testStrategy": "Test full PKCE flow with valid code_challenge/verifier, test invalid PKCE rejection, test scope validation"
+            "testStrategy": "Test full PKCE flow with valid code_challenge/verifier, test invalid PKCE rejection, test scope validation",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -361,7 +406,8 @@
             ],
             "details": "Support grant_type=authorization_code with code_verifier validation, grant_type=refresh_token. Issue JWT access_token (HS256), refresh_token with rotation. Validate client authentication for confidential clients[1][2]",
             "status": "pending",
-            "testStrategy": "Test token exchange with valid PKCE verifier, test refresh token rotation, test invalid grant rejection"
+            "testStrategy": "Test token exchange with valid PKCE verifier, test refresh token rotation, test invalid grant rejection",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -372,7 +418,8 @@
             ],
             "details": "On refresh_token grant, invalidate old refresh_token, issue new one. Store token pairs in database with usage flags. Implement token family tracking for rotation[1]",
             "status": "pending",
-            "testStrategy": "Test rotation issues new token and invalidates old, test multiple refresh attempts, test token family cleanup"
+            "testStrategy": "Test rotation issues new token and invalidates old, test multiple refresh attempts, test token family cleanup",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -384,7 +431,8 @@
             ],
             "details": "Configure HS256 signing with configurable TTL from env vars. Create database schemas for oauth_clients, authorization_codes, access_tokens, refresh_tokens. Implement token introspection support[1][4]",
             "status": "pending",
-            "testStrategy": "Validate JWT signature and claims, test TTL expiration, verify database CRUD operations for all OAuth entities"
+            "testStrategy": "Validate JWT signature and claims, test TTL expiration, verify database CRUD operations for all OAuth entities",
+            "parentId": "undefined"
           },
           {
             "id": 7,
@@ -396,21 +444,26 @@
             ],
             "details": "Handle POST requests with token (access_token or refresh_token), token_type_hint, client authentication. Mark tokens as revoked in database, support both access and refresh token revocation[1]",
             "status": "pending",
-            "testStrategy": "Test revocation of valid tokens, test revoked token rejection on refresh/access, test invalid token handling"
+            "testStrategy": "Test revocation of valid tokens, test revoked token rejection on refresh/access, test invalid token handling",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 9,
+        "recommendedSubtasks": 7,
+        "expansionPrompt": "Split into: 1) OAuth metadata endpoint, 2) Dynamic client registration, 3) Authorize endpoint with PKCE, 4) Token endpoint with refresh rotation, 5) Revoke endpoint, 6) JWT signing and database storage, 7) Compliance testing.",
+        "updatedAt": "2026-03-03T14:05:46.628Z"
       },
       {
-        "id": 7,
+        "id": "7",
         "title": "Role-Based Access Control System",
         "description": "Implement role-based access control with Institution Admin, Department Admin, and Member roles",
         "details": "Create RBAC middleware for Fastify routes. Define role hierarchy: Institution Admin (full access), Department Admin (department-scoped), Member (tool usage only). Implement permission checking for API endpoints and UI routes. Create user role assignment logic based on Azure AD group mappings. Handle role inheritance and department membership. Implement session-based authorization for web UI and Bearer token auth for API.",
         "testStrategy": "Unit tests for permission checking, role assignment validation, test access control across different user types and departments",
         "priority": "medium",
         "dependencies": [
-          5
+          "5"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -419,7 +472,8 @@
             "dependencies": [],
             "details": "Register as Fastify plugin using fastify-auth-middleware pattern. Implement preHandler hook to validate auth and attach user context (roles, department). Support both session cookies and Bearer tokens.",
             "status": "pending",
-            "testStrategy": "Unit test middleware registration, auth extraction, error handling for invalid/missing tokens"
+            "testStrategy": "Unit test middleware registration, auth extraction, error handling for invalid/missing tokens",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -430,7 +484,8 @@
             ],
             "details": "Create role enum and permission matrix. Institution Admin inherits all permissions. Department Admin scoped by department_id. Member limited to tool:use. Support role inheritance logic.",
             "status": "pending",
-            "testStrategy": "Test hierarchy resolution, permission inheritance, department scoping for different role combinations"
+            "testStrategy": "Test hierarchy resolution, permission inheritance, department scoping for different role combinations",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -442,7 +497,8 @@
             ],
             "details": "Build checkPermission(user, action, resource, department?) function. Integrate into middleware. Support UI route patterns and API resource paths. Return 403 for denied access.",
             "status": "pending",
-            "testStrategy": "Test all role/permission combinations across API/UI routes, department scoping edge cases"
+            "testStrategy": "Test all role/permission combinations across API/UI routes, department scoping edge cases",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -453,7 +509,8 @@
             ],
             "details": "Create configurable mapping table (group_id -> role + department). Auto-assign primary role based on highest hierarchy. Handle multiple group memberships with inheritance. Store in user_roles table.",
             "status": "pending",
-            "testStrategy": "Test mapping logic with mock Graph API groups, multiple overlapping groups, unmapped group fallback"
+            "testStrategy": "Test mapping logic with mock Graph API groups, multiple overlapping groups, unmapped group fallback",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -466,22 +523,27 @@
             ],
             "details": "Web UI: Secure session cookies with role/department data. API: JWT Bearer tokens with embedded permissions. Refresh token rotation support. Integrate with Task 4 OIDC flow and Task 6 OAuth.",
             "status": "pending",
-            "testStrategy": "End-to-end tests for UI session flow, API token flow, cross-task integration, token expiry/refresh"
+            "testStrategy": "End-to-end tests for UI session flow, API token flow, cross-task integration, token expiry/refresh",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 8,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break into: 1) RBAC middleware development, 2) Role hierarchy definition, 3) Permission checking logic, 4) Role assignment from Azure groups, 5) Session and token authorization.",
+        "updatedAt": "2026-03-03T14:07:10.010Z"
       },
       {
-        "id": 8,
+        "id": "8",
         "title": "MCP Proxy Infrastructure",
         "description": "Build MCP (Model Context Protocol) proxy system to forward requests to MCP server containers",
         "details": "Implement MCP proxy at /v1/:server/mcp endpoint. Validate Bearer tokens, check user permissions for requested server/tools. Forward requests to MCP server containers via HTTP. Implement tool allowlist checking per department. Add request/response logging for audit trail. Handle MCP server errors and timeouts. Implement tool caching with 5-minute TTL to reduce upstream load.",
         "testStrategy": "Mock MCP server responses, test proxy forwarding, validate permission checking, test tool allowlist enforcement, audit logging verification",
         "priority": "high",
         "dependencies": [
-          6,
-          7
+          "6",
+          "7"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -490,7 +552,8 @@
             "dependencies": [],
             "details": "Register dynamic route using Fastify's route params for :server. Parse incoming MCP JSON-RPC requests. Add basic request parsing middleware. Ensure compatibility with MCP protocol over HTTP.",
             "status": "pending",
-            "testStrategy": "Test route registration, parameter extraction for server name, MCP request parsing validation"
+            "testStrategy": "Test route registration, parameter extraction for server name, MCP request parsing validation",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -501,7 +564,8 @@
             ],
             "details": "Extract and validate JWT Bearer token. Integrate with Task 7 RBAC middleware. Query user roles/departments from session/DB. Verify access to specific :server and tools. Return 401/403 on failure.",
             "status": "pending",
-            "testStrategy": "Mock tokens for different roles, test permission grants/denials for servers/tools, edge cases like expired tokens"
+            "testStrategy": "Mock tokens for different roles, test permission grants/denials for servers/tools, edge cases like expired tokens",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -513,7 +577,8 @@
             ],
             "details": "Discover/lookup MCP server container URL by :server param (from config/DB). Use HTTP client (axios/fetch) to proxy POST requests. Preserve MCP headers like Mcp-Session-Id. Handle streaming if needed.",
             "status": "pending",
-            "testStrategy": "Mock upstream MCP servers, verify request forwarding fidelity, test with real MCP JSON-RPC payloads"
+            "testStrategy": "Mock upstream MCP servers, verify request forwarding fidelity, test with real MCP JSON-RPC payloads",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -525,7 +590,8 @@
             ],
             "details": "Parse MCP request for tool names. Fetch department allowlist from DB/config based on user dept. Validate each tool in request. Reject requests with disallowed tools (403). Log violations.",
             "status": "pending",
-            "testStrategy": "Test with allowed/blocked tools per dept, mixed requests, empty allowlists, dynamic tool lists"
+            "testStrategy": "Test with allowed/blocked tools per dept, mixed requests, empty allowlists, dynamic tool lists",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -536,7 +602,8 @@
             ],
             "details": "Use Redis or in-memory cache (e.g., lru-cache). Cache successful tool call responses only. Key: userId+server+tool+hash(params). TTL 5min. Bypass cache for non-idempotent or mutating tools.",
             "status": "pending",
-            "testStrategy": "Verify cache hits/misses, TTL expiration, cache invalidation, memory usage under load"
+            "testStrategy": "Verify cache hits/misses, TTL expiration, cache invalidation, memory usage under load",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -551,21 +618,26 @@
             ],
             "details": "Set HTTP timeouts (30s). Catch/translate upstream errors to standard MCP error responses. Log all requests/responses to audit DB/file (user, server, tools, status, timing). Add rate limiting.",
             "status": "pending",
-            "testStrategy": "Simulate timeouts/errors from mocks, verify logging completeness, audit trail verification, error response formats"
+            "testStrategy": "Simulate timeouts/errors from mocks, verify logging completeness, audit trail verification, error response formats",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 8,
+        "recommendedSubtasks": 6,
+        "expansionPrompt": "Divide: 1) Proxy endpoint routing, 2) Token/permission validation, 3) MCP server forwarding, 4) Tool allowlist enforcement, 5) Caching implementation, 6) Error handling and logging.",
+        "updatedAt": "2026-03-03T14:10:32.689Z"
       },
       {
-        "id": 9,
+        "id": "9",
         "title": "M365 MCP Server Implementation",
         "description": "Create Microsoft 365 MCP server for Mail, Calendar, Files, Teams, and Directory access",
         "details": "Build standalone MCP server container for M365 integration. Implement Microsoft Graph OAuth 2.0 flow for user consent. Create MCP tools for: Mail (read/search/send), Calendar (read/write events), Files (OneDrive/SharePoint access), Teams (channel messages), Directory (user lookup). Use @azure/msal-node for authentication. Implement credential encryption with AES-256-GCM. Handle token refresh automatically.",
         "testStrategy": "Unit tests for each MCP tool, integration tests with Microsoft Graph API, credential encryption/decryption validation, OAuth flow testing",
         "priority": "high",
         "dependencies": [
-          8
+          "8"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -574,7 +646,8 @@
             "dependencies": [],
             "details": "Create Dockerfile using Node.js 22 base image, copy package.json and src/, install @modelcontextprotocol/sdk, @azure/msal-node, Fastify. Expose MCP HTTP endpoint on port 3001 with StreamableHTTPServerTransport. Include multi-stage build for production.",
             "status": "pending",
-            "testStrategy": "Test Docker build success, container startup, exposed ports, and basic MCP health check."
+            "testStrategy": "Test Docker build success, container startup, exposed ports, and basic MCP health check.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -585,7 +658,8 @@
             ],
             "details": "Configure MSAL PublicClientApplication for authorization code flow with PKCE. Create endpoints for /oauth/authorize redirect and /oauth/callback token exchange. Store tokens securely and implement user consent UI if needed.",
             "status": "pending",
-            "testStrategy": "Test full OAuth flow end-to-end, token acquisition, and Graph API permission scopes."
+            "testStrategy": "Test full OAuth flow end-to-end, token acquisition, and Graph API permission scopes.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -596,7 +670,8 @@
             ],
             "details": "Define MCP tools with Zod schemas for listMessages, searchMessages, sendMail. Use Graph API /me/messages, /me/sendMail endpoints. Implement pagination and attachment handling.",
             "status": "pending",
-            "testStrategy": "Unit tests for each operation, integration tests with mock Graph responses."
+            "testStrategy": "Unit tests for each operation, integration tests with mock Graph responses.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -607,7 +682,8 @@
             ],
             "details": "Define MCP tools for getEvents, createEvent, updateEvent, deleteEvent using Graph /me/events. Support recurrence, attendees, and time zones.",
             "status": "pending",
-            "testStrategy": "Test event CRUD operations, recurrence patterns, and conflict detection."
+            "testStrategy": "Test event CRUD operations, recurrence patterns, and conflict detection.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -618,7 +694,8 @@
             ],
             "details": "Implement tools for listDrives, listChildren, upload, download, createShareLink using Graph /me/drive and /sites endpoints. Handle large files with upload sessions.",
             "status": "pending",
-            "testStrategy": "Test file operations across OneDrive and SharePoint, permission handling."
+            "testStrategy": "Test file operations across OneDrive and SharePoint, permission handling.",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -629,7 +706,8 @@
             ],
             "details": "Define tools for listChannelMessages, sendMessage, replyToMessage using Graph /teams/{id}/channels/{id}/messages. Support mentions and attachments.",
             "status": "pending",
-            "testStrategy": "Integration tests for message CRUD in test Teams channels."
+            "testStrategy": "Integration tests for message CRUD in test Teams channels.",
+            "parentId": "undefined"
           },
           {
             "id": 7,
@@ -640,7 +718,8 @@
             ],
             "details": "Implement getUsers, getUser, getUserGroups using Graph /users and /me/memberOf. Add search by displayName/email and pagination.",
             "status": "pending",
-            "testStrategy": "Test user search accuracy and group membership retrieval."
+            "testStrategy": "Test user search accuracy and group membership retrieval.",
+            "parentId": "undefined"
           },
           {
             "id": 8,
@@ -651,21 +730,26 @@
             ],
             "details": "Use crypto module for AES-256-GCM encryption of client secrets/tokens. Integrate MSAL token cache with automatic refresh. Add key rotation support and secure env var handling.",
             "status": "pending",
-            "testStrategy": "Validate encryption/decryption roundtrip, token refresh triggers, and expiry handling."
+            "testStrategy": "Validate encryption/decryption roundtrip, token refresh triggers, and expiry handling.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 9,
+        "recommendedSubtasks": 8,
+        "expansionPrompt": "Split by feature: 1) Container/Dockerfile setup, 2) MS Graph OAuth flow, 3-7) Individual MCP tools (Mail, Calendar, Files, Teams, Directory), 8) Credential encryption and token refresh.",
+        "updatedAt": "2026-03-03T14:18:26.689Z"
       },
       {
-        "id": 10,
+        "id": "10",
         "title": "Audit Logging System",
         "description": "Implement comprehensive audit logging for all MCP requests and administrative actions",
         "details": "Create audit logging middleware to capture: user ID, department, server/tool name, timestamp, latency, success/error status, optional request/response hashes. Store in audit_logs table with proper indexing. Implement log retention policies. Create audit log viewer with filtering by user, department, date range, server. Support CSV export functionality. Ensure logs are immutable after creation.",
         "testStrategy": "Validate audit log creation for all request types, test filtering and export functionality, verify log immutability, performance test with large log volumes",
         "priority": "medium",
         "dependencies": [
-          8
+          "8"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -674,7 +758,8 @@
             "dependencies": [],
             "details": "Use Express.js middleware or equivalent to wrap request handlers. Calculate latency with process.hrtime(). Generate SHA-256 hashes for request/response bodies if enabled. Ensure middleware is non-blocking and handles errors gracefully. Integrate with existing auth context for user/department info.",
             "status": "pending",
-            "testStrategy": "Unit test middleware with mocked requests for all capture fields. Integration test with real endpoints to verify log generation on success/error paths. Performance test latency impact under high load."
+            "testStrategy": "Unit test middleware with mocked requests for all capture fields. Integration test with real endpoints to verify log generation on success/error paths. Performance test latency impact under high load.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -685,7 +770,8 @@
             ],
             "details": "Create table with columns: id (UUID primary key), user_id, department_id, server_name, tool_name, timestamp (indexed), latency_ms, status (success/error), request_hash, response_hash, metadata JSONB. Add composite indexes on (user_id, timestamp), (department_id, timestamp), (server_name, timestamp). Use transactions for atomic inserts.",
             "status": "pending",
-            "testStrategy": "Validate schema with sample inserts. Test index performance with EXPLAIN ANALYZE on common queries. Verify data integrity with concurrent inserts."
+            "testStrategy": "Validate schema with sample inserts. Test index performance with EXPLAIN ANALYZE on common queries. Verify data integrity with concurrent inserts.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -696,7 +782,8 @@
             ],
             "details": "Create /audit-logs route with React/Vue frontend. Implement API endpoints GET /api/audit-logs with query params for filtering, pagination. Use SQL WHERE clauses with indexed fields. Add CSV export endpoint generating headers and data rows. Secure with department-scoped RBAC.",
             "status": "pending",
-            "testStrategy": "E2E tests for filtering scenarios and CSV export validation. Load test with 10k+ records. Verify department isolation prevents cross-department log viewing."
+            "testStrategy": "E2E tests for filtering scenarios and CSV export validation. Load test with 10k+ records. Verify department isolation prevents cross-department log viewing.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -707,21 +794,26 @@
             ],
             "details": "Add cron job/service for retention: DELETE FROM audit_logs WHERE timestamp < NOW() - INTERVAL '90 days' (configurable). For immutability: use WORM pattern with append-only inserts, hash chain verification, or database triggers preventing UPDATE/DELETE on audit_logs. Encrypt logs at rest if required.",
             "status": "pending",
-            "testStrategy": "Test retention job removes old logs correctly without affecting recent ones. Attempt unauthorized modifications via SQL direct access and verify prevention. Validate hash chain integrity after bulk inserts."
+            "testStrategy": "Test retention job removes old logs correctly without affecting recent ones. Attempt unauthorized modifications via SQL direct access and verify prevention. Validate hash chain integrity after bulk inserts.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 6,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Break down: 1) Audit middleware implementation, 2) Database storage and indexing, 3) Log viewer UI with filtering/export, 4) Retention policies and immutability.",
+        "updatedAt": "2026-03-03T14:16:13.596Z"
       },
       {
-        "id": 11,
+        "id": "11",
         "title": "Web UI Dashboard and Navigation",
         "description": "Build server-rendered web interface for user dashboard and navigation using Fastify templates",
         "details": "Create server-rendered HTML templates using Fastify's view engine (handlebars or similar). Implement main dashboard showing user info, department membership, available tools. Create navigation structure for settings, department management, admin panels. Implement responsive design with basic CSS. Add session-based authentication checks for all UI routes. Include logout functionality.",
         "testStrategy": "UI rendering tests, session authentication validation, responsive design testing across devices, navigation flow testing",
         "priority": "medium",
         "dependencies": [
-          7
+          "7"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -730,7 +822,8 @@
             "dependencies": [],
             "details": "Install and register @fastify/view or point-of-view plugin. Set up views directory structure with base layout template including head, navigation, and responsive CSS framework (e.g., Tailwind or Bootstrap). Configure partials for header, footer, navigation.",
             "status": "pending",
-            "testStrategy": "Verify template rendering with sample data, check layout consistency across pages, validate CSS loading and responsive breakpoints."
+            "testStrategy": "Verify template rendering with sample data, check layout consistency across pages, validate CSS loading and responsive breakpoints.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -741,7 +834,8 @@
             ],
             "details": "Develop dashboard.hbs template using session data: user profile, departments list from DB, tools based on permissions. Implement responsive grid layout with CSS. Add data fetching hooks to populate user/department info from database queries.",
             "status": "pending",
-            "testStrategy": "Render tests with mock user sessions, validate data display accuracy, responsive design checks on mobile/tablet/desktop viewports."
+            "testStrategy": "Render tests with mock user sessions, validate data display accuracy, responsive design checks on mobile/tablet/desktop viewports.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -753,20 +847,25 @@
             ],
             "details": "Create route handlers for /dashboard, /settings, /departments, /admin with preHandler auth hooks checking valid sessions. Build shared navigation partial with conditional links based on user roles. Add /logout route clearing session cookie. Ensure all UI routes redirect unauthenticated users to login.",
             "status": "pending",
-            "testStrategy": "Authentication flow tests (access/redirect), navigation link validation, logout session cleanup verification, role-based access control."
+            "testStrategy": "Authentication flow tests (access/redirect), navigation link validation, logout session cleanup verification, role-based access control.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 5,
+        "recommendedSubtasks": 3,
+        "expansionPrompt": "Divide into: 1) Template engine setup, 2) Dashboard page implementation, 3) Navigation and auth integration.",
+        "updatedAt": "2026-03-03T14:11:22.324Z"
       },
       {
-        "id": 12,
+        "id": "12",
         "title": "Institution Admin Panel",
         "description": "Build comprehensive admin interface for institution-wide management and configuration",
         "details": "Create admin panel at /settings/admin with sections: Overview (metrics dashboard), Departments (list/create/configure), Members (search/reassign), Servers (enable/disable), Tool Access (allowlists), Audit Log (viewer/export). Implement Azure AD group mapping UI for configuring group -> department mappings. Add member search and role assignment functionality. Include server access control toggles per department.",
         "testStrategy": "Admin functionality testing, group mapping UI validation, member management operations testing, audit log export verification",
         "priority": "medium",
         "dependencies": [
-          10,
-          11
+          "10",
+          "11"
         ],
         "status": "pending",
         "subtasks": [
@@ -777,7 +876,8 @@
             "dependencies": [],
             "details": "Create Overview section at /settings/admin/overview with charts for active users, department counts, server usage, tool access stats, recent audit events. Use Chart.js or Recharts for visualization. Fetch data from aggregated API endpoints. Implement real-time updates with WebSockets or polling.",
             "status": "pending",
-            "testStrategy": "Verify all metrics display correctly, test data accuracy against database, validate responsive design and refresh functionality"
+            "testStrategy": "Verify all metrics display correctly, test data accuracy against database, validate responsive design and refresh functionality",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -786,7 +886,8 @@
             "dependencies": [],
             "details": "Implement Departments section with list view, create/edit forms, delete confirmation. Add Azure AD group mapping UI showing group ID -> department mappings table. Support bulk operations and search/filter. Integrate with /api/departments and /api/group-mappings endpoints.",
             "status": "pending",
-            "testStrategy": "Test full CRUD operations, validate Azure AD group mapping persistence and UI accuracy, verify department isolation"
+            "testStrategy": "Test full CRUD operations, validate Azure AD group mapping persistence and UI accuracy, verify department isolation",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -795,7 +896,8 @@
             "dependencies": [],
             "details": "Create Members section with search by name/email/department, bulk selection, reassign to departments, role assignment (admin/member). Display current department/role badges. Support export to CSV. Use debounced search with /api/members/search endpoint.",
             "status": "pending",
-            "testStrategy": "Validate search accuracy and performance, test role reassignment permissions, verify bulk operations and CSV export"
+            "testStrategy": "Validate search accuracy and performance, test role reassignment permissions, verify bulk operations and CSV export",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -804,7 +906,8 @@
             "dependencies": [],
             "details": "Develop Servers section listing all servers with global toggle and per-department access matrix. Use toggle switches with confirmation dialogs. Implement real-time updates via WebSockets. Integrate with /api/servers/:id/access/:department endpoint.",
             "status": "pending",
-            "testStrategy": "Test toggle functionality across departments, verify permission enforcement, validate real-time sync across sessions"
+            "testStrategy": "Test toggle functionality across departments, verify permission enforcement, validate real-time sync across sessions",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -813,7 +916,8 @@
             "dependencies": [],
             "details": "Build Tool Access section showing tools per server per department. Implement allowlist editor with search/add/remove. Support inheritance override toggles. Use nested tables or tabs for organization. Connect to /api/tool-access endpoints.",
             "status": "pending",
-            "testStrategy": "Verify allowlist CRUD operations, test inheritance logic, validate department-specific overrides and permission checks"
+            "testStrategy": "Verify allowlist CRUD operations, test inheritance logic, validate department-specific overrides and permission checks",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -826,19 +930,23 @@
             ],
             "details": "Create Audit Log section with advanced filters (date range, user, department, server, action). Paginated table view with sortable columns. Add CSV export button with all visible data. Implement log immutability indicators. Use /api/audit-logs with query params.",
             "status": "pending",
-            "testStrategy": "Test all filter combinations, validate pagination and sorting, verify CSV export accuracy and large dataset performance"
+            "testStrategy": "Test all filter combinations, validate pagination and sorting, verify CSV export accuracy and large dataset performance",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 6,
+        "expansionPrompt": "Split by sections: 1) Overview/metrics, 2) Departments management, 3) Members management, 4) Servers control, 5) Tool access config, 6) Audit viewer/export."
       },
       {
-        "id": 13,
+        "id": "13",
         "title": "Department Management and Tool Access Control",
         "description": "Implement department-level administration and tool access control configuration",
         "details": "Create department admin interface at /settings/department for Department Admins. Implement tool allowlist management per department and server. Create API endpoints for managing department tool access: GET/PUT /api/departments/:id/tool-access/:server. Add member management within department scope. Implement tool access inheritance and override logic. Create department-scoped audit log viewing.",
         "testStrategy": "Department admin permission testing, tool allowlist functionality validation, member management within department scope, audit log filtering by department",
         "priority": "medium",
         "dependencies": [
-          12
+          "12"
         ],
         "status": "pending",
         "subtasks": [
@@ -849,7 +957,8 @@
             "dependencies": [],
             "details": "Build UI using existing admin panel patterns with breadcrumbs, section overview, three-column grid layout for responsiveness. Include department list, search, and basic stats. Protect route with RBAC middleware checking Department Admin role.",
             "status": "pending",
-            "testStrategy": "Test route access for Department Admin vs other roles, UI responsiveness across devices, breadcrumb navigation, and data loading for departments."
+            "testStrategy": "Test route access for Department Admin vs other roles, UI responsiveness across devices, breadcrumb navigation, and data loading for departments.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -860,7 +969,8 @@
             ],
             "details": "Create GET/PUT /api/departments/:id/tool-access/:server endpoints with JSONSchema validation. Build UI table with edit/new forms, inheritance indicators, and override toggles. Implement backend logic for allowlist storage/retrieval with department-server scoping.",
             "status": "pending",
-            "testStrategy": "Validate API responses for different departments/servers, test inheritance/override scenarios, UI form submission end-to-end, permission enforcement."
+            "testStrategy": "Validate API responses for different departments/servers, test inheritance/override scenarios, UI form submission end-to-end, permission enforcement.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -871,7 +981,8 @@
             ],
             "details": "Extend department UI with member table showing users, roles, join date. Implement add/remove APIs scoped to department. Integrate with Azure AD group mappings and RBAC for Department Admin permissions. Handle bulk operations and search/filtering.",
             "status": "pending",
-            "testStrategy": "Test member CRUD within department boundaries, cross-department isolation via RLS, role assignment validation, UI search/filter functionality."
+            "testStrategy": "Test member CRUD within department boundaries, cross-department isolation via RLS, role assignment validation, UI search/filter functionality.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -882,21 +993,25 @@
             ],
             "details": "Add audit logs tab/section to department UI. Query audit_logs table with RLS filters for department scope. Implement pagination, search by user/action/date, and export options. Use efficient indexes for performance on large log sets.",
             "status": "pending",
-            "testStrategy": "Verify log filtering shows only department events, performance with 10k+ records, pagination accuracy, different user permission levels."
+            "testStrategy": "Verify log filtering shows only department events, performance with 10k+ records, pagination accuracy, different user permission levels.",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 6,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Break into: 1) Department admin UI, 2) Tool allowlist API/UI, 3) Member management, 4) Scoped audit viewing."
       },
       {
-        "id": 14,
+        "id": "14",
         "title": "Docker Compose Deployment Configuration",
         "description": "Create Docker Compose setup for easy deployment with PostgreSQL, Lantern gateway, and M365 MCP server",
         "details": "Create docker-compose.yml with services: postgres (PostgreSQL 16), lantern (main gateway), m365-mcp (M365 MCP server). Create Dockerfile for Lantern using Node.js 22 Alpine base. Include .env.example with all required environment variables documented. Set up proper networking, volumes for data persistence, and health checks. Configure container restart policies and resource limits (2 CPU / 4 GB RAM minimum).",
         "testStrategy": "Docker Compose deployment testing, container health check validation, environment variable configuration testing, data persistence verification",
         "priority": "high",
         "dependencies": [
-          9
+          "9"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -905,7 +1020,8 @@
             "dependencies": [],
             "details": "Include service configurations with images, ports, environment variables from .env, depends_on for startup order, restart: unless-stopped policy, and deploy resources limits (cpus: '2', memory: 4G).",
             "status": "pending",
-            "testStrategy": "Validate YAML syntax, test docker compose config, ensure services start without errors"
+            "testStrategy": "Validate YAML syntax, test docker compose config, ensure services start without errors",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -914,7 +1030,8 @@
             "dependencies": [],
             "details": "Use multi-stage build if needed, copy package.json and install dependencies, build TypeScript, expose port, set HEALTHCHECK, optimize for production with .dockerignore.",
             "status": "pending",
-            "testStrategy": "Build Dockerfile successfully, verify image size under 500MB, test container healthcheck passes"
+            "testStrategy": "Build Dockerfile successfully, verify image size under 500MB, test container healthcheck passes",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -925,20 +1042,25 @@
             ],
             "details": "Create custom bridge network 'lantern-network', postgres volume 'postgres_data', .env.example with POSTGRES_PASSWORD, DB credentials, API keys, ports; add healthchecks like pg_isready for postgres and curl for services.",
             "status": "pending",
-            "testStrategy": "Verify env vars load correctly, test volume persistence after restart, validate healthchecks and network connectivity between services"
+            "testStrategy": "Verify env vars load correctly, test volume persistence after restart, validate healthchecks and network connectivity between services",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 4,
+        "recommendedSubtasks": 3,
+        "expansionPrompt": "Divide: 1) docker-compose.yml services definition, 2) Lantern Dockerfile, 3) .env and networking/volume config.",
+        "updatedAt": "2026-03-03T14:20:33.297Z"
       },
       {
-        "id": 15,
+        "id": "15",
         "title": "Multi-Tenant Support and Institution Registration",
         "description": "Implement multi-tenant architecture for shared hosted deployment model",
         "details": "Implement MULTI_TENANT=true mode with institution registration flow. Create institution registration API accepting Azure tenant ID and verified domain. Implement tenant-scoped row-level security in all database queries. Add institution isolation middleware ensuring users can only access their institution's data. Create institution management for shared hosting. Implement tenant-aware OAuth client registration.",
         "testStrategy": "Multi-tenant isolation testing, institution registration flow validation, row-level security verification, tenant data separation testing, cross-tenant access prevention validation",
         "priority": "medium",
         "dependencies": [
-          13,
-          14
+          "13",
+          "14"
         ],
         "status": "pending",
         "subtasks": [
@@ -949,7 +1071,8 @@
             "dependencies": [],
             "details": "Parse MULTI_TENANT env var on startup, set global tenant mode, add tenant ID to request context, implement fallback to single-tenant behavior when disabled. Update app bootstrapper.",
             "status": "pending",
-            "testStrategy": "Unit tests for mode detection, integration tests verifying single vs multi-tenant behavior switching"
+            "testStrategy": "Unit tests for mode detection, integration tests verifying single vs multi-tenant behavior switching",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -960,7 +1083,8 @@
             ],
             "details": "Validate Azure tenant ID format and domain ownership, create institution record with unique tenant_id, generate institution-specific configs, return API keys and endpoints. Add rate limiting.",
             "status": "pending",
-            "testStrategy": "API contract testing, mock Azure validation, end-to-end registration flow with database assertions"
+            "testStrategy": "API contract testing, mock Azure validation, end-to-end registration flow with database assertions",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -971,7 +1095,8 @@
             ],
             "details": "Create institution_id column on all relevant tables with defaults, implement database policies enforcing current_tenant filter, audit all existing queries for RLS compliance, add query builder middleware.",
             "status": "pending",
-            "testStrategy": "Cross-tenant data isolation testing, SQL injection prevention validation, comprehensive query coverage testing"
+            "testStrategy": "Cross-tenant data isolation testing, SQL injection prevention validation, comprehensive query coverage testing",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -983,7 +1108,8 @@
             ],
             "details": "Extract institution_id from user session/Azure claims, validate against request path params and query filters, block cross-institution access with 403, log isolation violations for audit.",
             "status": "pending",
-            "testStrategy": "Middleware unit tests, integration tests simulating cross-tenant access attempts, performance impact benchmarking"
+            "testStrategy": "Middleware unit tests, integration tests simulating cross-tenant access attempts, performance impact benchmarking",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -995,7 +1121,8 @@
             ],
             "details": "List all institutions with metrics (users, usage, servers), enable/disable institutions, manage custom domains, view tenant-specific configs, export institution data, implement bulk operations.",
             "status": "pending",
-            "testStrategy": "Admin UI functionality testing, role-based access control validation, data export accuracy verification"
+            "testStrategy": "Admin UI functionality testing, role-based access control validation, data export accuracy verification",
+            "parentId": "undefined"
           },
           {
             "id": 6,
@@ -1008,15 +1135,23 @@
             ],
             "details": "Modify /oauth/register to scope clients to institution_id, partition client secrets by tenant, implement tenant-aware token issuance, update authorization server metadata per tenant, ensure RLS compliance.",
             "status": "pending",
-            "testStrategy": "OAuth compliance testing per tenant, cross-tenant client isolation validation, token introspection endpoint testing"
+            "testStrategy": "OAuth compliance testing per tenant, cross-tenant client isolation validation, token introspection endpoint testing",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "complexity": 9,
+        "recommendedSubtasks": 6,
+        "expansionPrompt": "Split: 1) Multi-tenant mode flag handling, 2) Institution registration API, 3) RLS updates across all queries, 4) Isolation middleware, 5) Institution management, 6) Tenant-aware OAuth."
       }
     ],
     "metadata": {
-      "created": "2026-03-03T03:50:42.243Z",
-      "updated": "2026-03-03T03:50:42.243Z",
-      "description": "Tasks for master context"
+      "version": "1.0.0",
+      "lastModified": "2026-03-03T14:20:33.297Z",
+      "taskCount": 15,
+      "completedCount": 12,
+      "tags": [
+        "master"
+      ]
     }
   }
 }

@@ -41,37 +41,7 @@ export function webRoutes(sql: Sql) {
         );
     });
 
-    // GET /settings/admin — institution admin panel (stub)
-    app.get('/settings/admin', async (request, reply) => {
-      const session = getSession(request);
-      if (!session.userId) return reply.redirect('/auth/login');
-      if (!session.institutionAdmin)
-        return reply.status(403).type('text/html').send('<p>Access denied.</p>');
-      return reply
-        .type('text/html')
-        .send(
-          `<!DOCTYPE html><html><body><p>Admin panel coming soon (Task 12). <a href="/settings">Back</a></p></body></html>`,
-        );
-    });
-
-    // Admin sub-routes — stubs for paths not yet implemented in dedicated route modules
+    // Note: /settings/admin and sub-routes are handled by adminRoutes (src/admin/routes.ts)
     // Note: /settings/admin/audit is handled by auditRoutes (src/audit/routes.ts)
-    for (const path of [
-      '/settings/admin/departments',
-      '/settings/admin/members',
-      '/settings/admin/servers',
-    ]) {
-      app.get(path, async (request, reply) => {
-        const session = getSession(request);
-        if (!session.userId) return reply.redirect('/auth/login');
-        if (!session.institutionAdmin)
-          return reply.status(403).type('text/html').send('<p>Access denied.</p>');
-        return reply
-          .type('text/html')
-          .send(
-            `<!DOCTYPE html><html><body><p>Coming soon. <a href="/settings/admin">Back</a></p></body></html>`,
-          );
-      });
-    }
   };
 }
