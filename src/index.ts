@@ -10,6 +10,7 @@ import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import { config } from './config.js';
 import { getDb, closeDb } from './db/index.js';
+import { authRoutes } from './auth/routes.js';
 
 const app = Fastify({
   logger: {
@@ -39,6 +40,9 @@ const sql = getDb(config.databaseUrl);
 // ---------------------------------------------------------------------------
 // Routes
 // ---------------------------------------------------------------------------
+
+// Auth routes (login, callback, logout)
+await app.register(authRoutes(sql));
 
 // Health check — unauthenticated
 app.get('/health', async () => {
