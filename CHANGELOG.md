@@ -8,13 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **SCIM 2.0 Provisioning Bridge** — Azure AD Enterprise App pushes groups→departments and users automatically
+- **SCIM 2.0 Provisioning Bridge** — Azure AD Enterprise App pushes groups→departments and users automatically; 54 Technology Division staff provisioned on first sync
   - `migrations/004_scim.cjs` — adds `scim_tokens` table (hashed Bearer tokens for SCIM auth) and `external_id`/`active` columns on `departments`
   - `src/scim/middleware.ts` — SHA-256 Bearer token validation against `scim_tokens`, updates `last_used_at`
-  - `src/scim/routes.ts` — full SCIM 2.0 endpoint set at `/scim/v2`: ServiceProviderConfig, Schemas, Users (GET/POST/PATCH), Groups (GET/POST/PATCH/DELETE)
-  - SCIM PATCH Groups handles Azure `Add`/`Remove` member operations → syncs `user_departments`
+  - `src/scim/routes.ts` — full SCIM 2.0 endpoint set at `/scim/`: ServiceProviderConfig, Schemas, Users (GET/POST/PATCH), Groups (GET/POST/PATCH/DELETE)
+  - SCIM PATCH Groups handles Azure `Add`/`Remove` member operations → syncs `user_departments`; also handles `members[value eq "oid"]` filter syntax
   - Admin UI: `GET/POST /settings/admin/scim` — generate tokens (shown once), revoke tokens, copy SCIM endpoint URL
   - Navigation: added SCIM Tokens link to admin sidebar and overview quick links
+  - `ignoreTrailingSlash: true` on Fastify — Azure AD credential probe appends trailing slash
+  - `application/scim+json` content-type parser registered before plugins — Azure sends this MIME type on all write operations
+  - BaseAddress configured as `https://lantern.chattstate.edu` (no path) — `customappsso` template appends `/scim/` automatically
 
 - **Per-User Delegated M365 Tokens** — each staff member's M365 MCP calls use their own Azure Graph token
   - `migrations/005_user_m365_tokens.cjs` — adds `refresh_data` and `expires_at` columns to `user_credentials`
