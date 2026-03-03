@@ -15,6 +15,7 @@ import { metadataRoutes } from './oauth/metadata.js';
 import { oauthRoutes } from './oauth/routes.js';
 import { proxyRoutes } from './proxy/router.js';
 import { webRoutes } from './web/routes.js';
+import { auditRoutes } from './audit/routes.js';
 
 const app = Fastify({
   logger: {
@@ -54,6 +55,9 @@ await app.register(webRoutes(sql));
 // OAuth 2.1 + PKCE server (RFC 8414 metadata + RFC 7591 registration + token endpoints)
 await app.register(metadataRoutes());
 await app.register(oauthRoutes(sql));
+
+// Audit log viewer and CSV export — institution admins only
+await app.register(auditRoutes(sql));
 
 // MCP proxy — authenticated, sits at /v1/:server/mcp
 await app.register(proxyRoutes(sql));

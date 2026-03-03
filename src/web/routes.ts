@@ -54,12 +54,12 @@ export function webRoutes(sql: Sql) {
         );
     });
 
-    // Admin sub-routes — all stub for now, implemented in Task 12
+    // Admin sub-routes — stubs for paths not yet implemented in dedicated route modules
+    // Note: /settings/admin/audit is handled by auditRoutes (src/audit/routes.ts)
     for (const path of [
       '/settings/admin/departments',
       '/settings/admin/members',
       '/settings/admin/servers',
-      '/settings/admin/audit',
     ]) {
       app.get(path, async (request, reply) => {
         const session = getSession(request);

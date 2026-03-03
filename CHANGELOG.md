@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Audit logging query service, CSV export, and admin UI viewer (Task 10)
+  - `src/audit/service.ts` — `AuditService` with `queryLogs` (paginated, filterable), `getSummary` (24 h stats), and `exportCsv`; all queries strictly scoped to `institutionId`
+  - `src/audit/routes.ts` — Fastify plugin adding `GET /settings/admin/audit` (HTML table with filter form, summary stats, pagination) and `GET /settings/admin/audit/export` (CSV download); both require institution-admin role
+  - Wired `auditRoutes(sql)` into `src/index.ts`
+  - Removed `/settings/admin/audit` stub from `src/web/routes.ts` — now handled by dedicated module
+  - 6 new unit tests in `tests/audit.test.ts` covering constructor, CSV header/data rows, comma escaping, and `queryLogs` column mapping
 - OAuth 2.1 + PKCE server for Claude Desktop/Code authentication
   - `GET /.well-known/oauth-authorization-server` — RFC 8414 server metadata endpoint
   - `POST /oauth/register` — RFC 7591 Dynamic Client Registration
