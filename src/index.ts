@@ -19,6 +19,7 @@ import { auditRoutes } from './audit/routes.js';
 import { adminRoutes } from './admin/routes.js';
 import { departmentRoutes } from './department/routes.js';
 import { superadminRoutes } from './superadmin/routes.js';
+import { scimRoutes } from './scim/routes.js';
 
 const app = Fastify({
   logger: {
@@ -70,6 +71,9 @@ await app.register(departmentRoutes(sql));
 
 // Superadmin panel — multi-tenant management (SUPERADMIN_EMAILS)
 await app.register(superadminRoutes(sql));
+
+// SCIM 2.0 provisioning bridge — Azure AD → departments/users
+await app.register(scimRoutes(sql));
 
 // MCP proxy — authenticated, sits at /v1/:server/mcp
 await app.register(proxyRoutes(sql));

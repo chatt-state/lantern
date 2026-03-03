@@ -12,6 +12,7 @@ import { AllowlistService } from './allowlist-service.js';
 import { ToolCache } from './tool-cache.js';
 import { logAuditEntry } from './audit.js';
 import { getServer } from './server-registry.js';
+import { config } from '../config.js';
 
 export function proxyRoutes(sql: Sql) {
   const toolCache = new ToolCache();
@@ -105,6 +106,19 @@ export function proxyRoutes(sql: Sql) {
       forwardHeaders['X-Forwarded-For'] = request.ip;
       forwardHeaders['X-Lantern-User-Id'] = user.id;
       forwardHeaders['X-Lantern-Institution-Id'] = user.institution_id;
+
+      // Inject per-user M365 token for delegated Graph access
+      if (serverSlug === 'm365' && config.masterKey) {
+        try {
+          const { getM365Token } = await import('../auth/m365-token.js');
+          const m365Token = await getM365Token(sql, config.masterKey, user.id);
+          if (m365Token) {
+            forwardHeaders['X-Lantern-Access-Token'] = m365Token;
+          }
+        } catch {
+          // Token unavailable — upstream will handle with auth error
+        }
+      }
 
       let statusCode = 502;
       let upstreamError: string | undefined;

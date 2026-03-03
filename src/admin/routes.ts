@@ -6,6 +6,7 @@
  */
 import type { FastifyInstance } from 'fastify';
 import type { Sql } from 'postgres';
+import { randomBytes, createHash } from 'node:crypto';
 import { requireAuth, requireInstitutionAdmin } from '../auth/middleware.js';
 import { getSession } from '../auth/session.js';
 import { layout, escHtml } from '../web/layout.js';
@@ -96,6 +97,7 @@ export function adminRoutes(sql: Sql) {
           { href: '/settings/admin/members', label: 'Manage Members' },
           { href: '/settings/admin/servers', label: 'Manage Servers' },
           { href: '/settings/admin/audit', label: 'View Audit Log' },
+          { href: '/settings/admin/scim', label: 'SCIM Tokens' },
         ];
 
         const linksHtml = `<div class="card">
@@ -736,6 +738,150 @@ export function adminRoutes(sql: Sql) {
         }
 
         return reply.redirect(`/settings/admin/members/${id}?success=1`);
+      },
+    );
+
+    // -----------------------------------------------------------------------
+    // GET /settings/admin/scim — SCIM token management
+    // -----------------------------------------------------------------------
+    app.get(
+      '/settings/admin/scim',
+      { preHandler: [requireAuth, requireInstitutionAdmin] },
+      async (request, reply) => {
+        const session = getSession(request);
+        const institutionId = session.institutionId!;
+        const q = request.query as Record<string, string | undefined>;
+
+        const tokens = await sql<
+          { id: string; description: string | null; created_at: Date; last_used_at: Date | null }[]
+        >`
+          SELECT id, description, created_at, last_used_at
+          FROM scim_tokens
+          WHERE institution_id = ${institutionId}
+          ORDER BY created_at DESC
+        `;
+
+        const newTokenBanner = q.newToken
+          ? `<div style="background:rgba(99,102,241,0.1);border:1px solid var(--accent);border-radius:var(--radius);padding:16px;margin-bottom:20px">
+              <p style="font-weight:600;margin-bottom:8px;color:var(--accent)">⚠ Copy this token now — it will not be shown again</p>
+              <code style="font-family:monospace;font-size:13px;word-break:break-all;background:var(--bg);padding:8px 12px;border-radius:var(--radius);display:block">${escHtml(q.newToken)}</code>
+            </div>`
+          : '';
+
+        const tokenRowsHtml =
+          tokens.length === 0
+            ? `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:32px">No SCIM tokens. Generate one to enable Azure AD provisioning.</td></tr>`
+            : tokens
+                .map(
+                  (t) => `<tr>
+                <td style="${tdStyle}">${t.description ? escHtml(t.description) : '<span style="color:var(--text-muted)">—</span>'}</td>
+                <td style="${tdStyle}">${new Date(t.created_at).toLocaleDateString()}</td>
+                <td style="${tdStyle}">${t.last_used_at ? new Date(t.last_used_at).toLocaleString() : '<span style="color:var(--text-muted)">Never</span>'}</td>
+                <td style="${tdStyle}">
+                  <form method="post" action="/settings/admin/scim/revoke/${escHtml(t.id)}" style="display:inline"
+                    onsubmit="return confirm('Revoke this SCIM token?')">
+                    <button type="submit" class="btn btn-ghost" style="padding:3px 10px;font-size:12px;color:var(--danger);border-color:var(--danger)">Revoke</button>
+                  </form>
+                </td>
+              </tr>`,
+                )
+                .join('');
+
+        const generateFormHtml = `
+          <div class="card" style="margin-top:24px">
+            <h2 style="font-size:15px;font-weight:600;margin-bottom:4px">Generate New Token</h2>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
+              Use this token as the Bearer token in your Azure AD Enterprise App SCIM provisioning configuration.
+              Point Azure to: <code style="font-size:12px">https://lantern.chattstate.edu/scim/v2</code>
+            </p>
+            <form method="post" action="/settings/admin/scim/generate" style="display:flex;gap:8px;align-items:flex-end">
+              <div>
+                <label style="display:block;font-size:11px;color:var(--text-muted);margin-bottom:4px">Description</label>
+                <input name="description" maxlength="100" placeholder="e.g. Azure AD Enterprise App"
+                  style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-size:13px;width:280px">
+              </div>
+              <button type="submit" class="btn btn-primary">Generate Token</button>
+            </form>
+          </div>`;
+
+        const content = `
+          <h1 class="page-title">SCIM Provisioning Tokens</h1>
+          ${newTokenBanner}
+          ${flashBanner(q)}
+          <div class="card" style="padding:0;overflow:hidden">
+            <table style="width:100%;border-collapse:collapse">
+              ${tableHead('Description', 'Created', 'Last Used', 'Actions')}
+              <tbody>${tokenRowsHtml}</tbody>
+            </table>
+          </div>
+          ${generateFormHtml}`;
+
+        return reply.type('text/html').send(
+          layout({
+            title: 'SCIM Tokens',
+            user: {
+              displayName: session.displayName ?? session.email ?? 'Admin',
+              email: session.email ?? '',
+              institutionAdmin: session.institutionAdmin ?? false,
+            },
+            currentPath: '/settings/admin/scim',
+            content,
+          }),
+        );
+      },
+    );
+
+    // -----------------------------------------------------------------------
+    // POST /settings/admin/scim/generate — Generate SCIM token
+    // -----------------------------------------------------------------------
+    app.post(
+      '/settings/admin/scim/generate',
+      { preHandler: [requireAuth, requireInstitutionAdmin] },
+      async (request, reply) => {
+        const session = getSession(request);
+        const institutionId = session.institutionId!;
+        const body = request.body as Record<string, string>;
+
+        const description = (body.description ?? '').trim() || null;
+        const rawToken = randomBytes(32).toString('base64url');
+        const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+
+        await sql`
+          INSERT INTO scim_tokens (institution_id, token_hash, description)
+          VALUES (${institutionId}, ${tokenHash}, ${description})
+        `;
+
+        await sql`
+          INSERT INTO admin_audit_log (institution_id, actor_user_id, action, target_type, details)
+          VALUES (${institutionId}, ${session.userId!}, 'generate_scim_token', 'scim_token', '{}')
+        `;
+
+        return reply.redirect(`/settings/admin/scim?newToken=${encodeURIComponent(rawToken)}`);
+      },
+    );
+
+    // -----------------------------------------------------------------------
+    // POST /settings/admin/scim/revoke/:id — Revoke SCIM token
+    // -----------------------------------------------------------------------
+    app.post(
+      '/settings/admin/scim/revoke/:id',
+      { preHandler: [requireAuth, requireInstitutionAdmin] },
+      async (request, reply) => {
+        const session = getSession(request);
+        const institutionId = session.institutionId!;
+        const { id } = request.params as { id: string };
+
+        await sql`
+          DELETE FROM scim_tokens
+          WHERE id = ${id} AND institution_id = ${institutionId}
+        `;
+
+        await sql`
+          INSERT INTO admin_audit_log (institution_id, actor_user_id, action, target_type, details)
+          VALUES (${institutionId}, ${session.userId!}, 'revoke_scim_token', 'scim_token', '{}')
+        `;
+
+        return reply.redirect('/settings/admin/scim?success=Token+revoked');
       },
     );
 

@@ -20,6 +20,7 @@ export function layout(opts: LayoutOptions): string {
           { href: '/settings/admin/members', label: '↳ Members', icon: '' },
           { href: '/settings/admin/servers', label: '↳ Servers', icon: '' },
           { href: '/settings/admin/audit', label: '↳ Audit Log', icon: '' },
+          { href: '/settings/admin/scim', label: '↳ SCIM Tokens', icon: '' },
         ]
       : []),
     ...(user.superadmin ? [{ href: '/superadmin', label: 'Superadmin', icon: '🛡️' }] : []),

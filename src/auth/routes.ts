@@ -16,12 +16,13 @@ export function authRoutes(sql: Sql) {
     app.get('/auth/login', async (request, reply) => {
       const { state, nonce, codeVerifier, codeChallenge } = generateAuthParams();
 
-      // Store state + verifier in session for validation on callback
+      // Store state + verifier + nonce in session for validation on callback
       const session = getSession(request);
       setSession(reply, {
         ...session,
         oauthState: state,
         oauthCodeVerifier: codeVerifier,
+        oauthNonce: nonce,
       });
 
       const authUrl = await buildAuthorizationUrl({ state, nonce, codeChallenge });
@@ -34,6 +35,7 @@ export function authRoutes(sql: Sql) {
       const {
         oauthState: sessionState,
         oauthCodeVerifier: codeVerifier,
+        oauthNonce: sessionNonce,
         pendingAuthSessionId,
       } = session;
 
@@ -53,6 +55,7 @@ export function authRoutes(sql: Sql) {
         const tokenSet = await client.callback(config.azureCallbackUrl, params, {
           state: sessionState,
           code_verifier: codeVerifier,
+          nonce: sessionNonce,
         });
 
         const claims = tokenSet.claims();
@@ -117,6 +120,21 @@ export function authRoutes(sql: Sql) {
           `;
           user.institution_admin = true;
           console.log(`[multi-tenant] Promoted first user ${user.id} to institution admin for ${institution.id}`);
+        }
+
+        // Store M365 delegated token for per-user Graph access
+        if (tokenSet.access_token && config.masterKey) {
+          try {
+            const { storeM365Token } = await import('./m365-token.js');
+            await storeM365Token(sql, config.masterKey, {
+              userId: user.id,
+              accessToken: tokenSet.access_token,
+              refreshToken: tokenSet.refresh_token,
+              expiresAt: new Date(Date.now() + ((tokenSet.expires_in ?? 3600) as number) * 1000),
+            });
+          } catch (err) {
+            app.log.warn({ err }, 'Failed to store M365 token — login continues');
+          }
         }
 
         // Sync Azure AD groups → department memberships (non-blocking)

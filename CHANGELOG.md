@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **SCIM 2.0 Provisioning Bridge** — Azure AD Enterprise App pushes groups→departments and users automatically
+  - `migrations/004_scim.cjs` — adds `scim_tokens` table (hashed Bearer tokens for SCIM auth) and `external_id`/`active` columns on `departments`
+  - `src/scim/middleware.ts` — SHA-256 Bearer token validation against `scim_tokens`, updates `last_used_at`
+  - `src/scim/routes.ts` — full SCIM 2.0 endpoint set at `/scim/v2`: ServiceProviderConfig, Schemas, Users (GET/POST/PATCH), Groups (GET/POST/PATCH/DELETE)
+  - SCIM PATCH Groups handles Azure `Add`/`Remove` member operations → syncs `user_departments`
+  - Admin UI: `GET/POST /settings/admin/scim` — generate tokens (shown once), revoke tokens, copy SCIM endpoint URL
+  - Navigation: added SCIM Tokens link to admin sidebar and overview quick links
+
+- **Per-User Delegated M365 Tokens** — each staff member's M365 MCP calls use their own Azure Graph token
+  - `migrations/005_user_m365_tokens.cjs` — adds `refresh_data` and `expires_at` columns to `user_credentials`
+  - `src/auth/m365-token.ts` — `storeM365Token` / `getM365Token` using AES-256-GCM with per-user key derivation; auto-refreshes tokens expiring within 5 minutes
+  - `src/auth/azure.ts` — extended OIDC scope to request Graph delegated permissions (`User.Read`, `Mail.ReadBasic`, `Calendars.Read`, `Files.Read`, `Sites.Read.All`, `GroupMember.Read.All`)
+  - `src/auth/routes.ts` — stores M365 tokens after SSO callback (non-blocking)
+  - `src/proxy/router.ts` — injects `X-Lantern-Access-Token` header with user's Graph token before forwarding to M365 MCP server
+
+- **TDX MCP Server** — TeamDynamix ITSM integration (tickets, KB, assets, services, people)
+  - `src/servers/tdx/auth.ts` — `TdxAuthService`: BEID application-level auth with 7-hour token cache and automatic re-login
+  - `src/servers/tdx/client.ts` — `TdxClient`: typed fetch wrapper for TDX REST API (tickets, knowledge base, assets, services, people)
+  - `src/servers/tdx/server.ts` — `createTdxServer()`: 11 MCP tools (`search_tickets`, `get_ticket`, `create_ticket`, `update_ticket`, `search_knowledge_base`, `get_article`, `search_assets`, `get_asset`, `list_services`, `get_service`, `search_people`)
+  - `src/servers/tdx/http.ts` — stateless MCP Streamable HTTP transport (same pattern as M365 server)
+  - `src/servers/tdx/Dockerfile` — multi-stage `node:22-alpine` build
+  - `src/proxy/server-registry.ts` — registered `tdx` server slug
+  - `src/config.ts` — `SERVER_URL_TDX` environment variable
+
 - Docker Compose deployment configuration (Task 14)
   - `docker-compose.yml` — four-service stack: `postgres` (PostgreSQL 16 Alpine with health check), `migrate` (runs `npm run migrate` against postgres, exits cleanly), `lantern` (gateway; waits for migrate to complete), `m365-mcp` (internal-only MCP server; waits for lantern to be healthy)
   - `docker-compose.dev.yml` — development overlay: exposes postgres on port 5432, overrides lantern command to `tsx watch` hot reload, sets `DEBUG=*` and `LOG_LEVEL=debug`

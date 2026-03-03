@@ -28,5 +28,6 @@ export const config = {
   // MCP server URLs
   serverUrls: {
     m365: optional('SERVER_URL_M365', 'http://m365-mcp:8080'),
+    tdx: optional('SERVER_URL_TDX', 'http://tdx-mcp:8080'),
   },
 } as const;

@@ -53,7 +53,7 @@ export async function buildAuthorizationUrl(params: {
 }): Promise<string> {
   const client = await getAzureClient();
   return client.authorizationUrl({
-    scope: 'openid profile email offline_access',
+    scope: 'openid profile email offline_access User.Read Mail.ReadBasic Calendars.Read Files.Read Sites.Read.All GroupMember.Read.All',
     state: params.state,
     nonce: params.nonce,
     code_challenge: params.codeChallenge,

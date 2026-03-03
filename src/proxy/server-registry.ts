@@ -16,6 +16,11 @@ const SERVERS: McpServer[] = [
     displayName: 'Microsoft 365',
     upstreamUrl: config.serverUrls.m365,
   },
+  {
+    slug: 'tdx',
+    displayName: 'TeamDynamix',
+    upstreamUrl: config.serverUrls.tdx,
+  },
 ];
 
 const serverMap = new Map<string, McpServer>(SERVERS.map((s) => [s.slug, s]));
