@@ -1,0 +1,133 @@
+{
+	"meta": {
+		"generatedAt": "2026-03-03T03:51:17.223Z",
+		"tasksAnalyzed": 15,
+		"totalTasks": 15,
+		"analysisCount": 15,
+		"thresholdScore": 5,
+		"projectName": "Task Master",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Project Setup and Repository Initialization",
+			"complexityScore": 3,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down into: 1) GitHub repo creation and licensing, 2) Node.js/TypeScript project initialization with config files, 3) Folder structure and code quality tools setup (ESLint/Prettier), 4) GitHub Actions CI/CD pipeline configuration.",
+			"reasoning": "Standard boilerplate setup using established tools and patterns. Low technical risk, mostly configuration and following best practices. Multiple components but each is straightforward."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Database Schema Design and Migration System",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Divide into: 1) Core tables design (institutions, users, etc.), 2) Row-level security implementation, 3) Migration system setup with node-pg-migrate, 4) Performance indexes, 5) Encrypted credential storage, 6) Testing and validation scripts.",
+			"reasoning": "Involves complex PostgreSQL RLS for multi-tenancy, encryption implementation, performance optimization, and migration tooling. High risk of data integrity issues and security vulnerabilities."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Fastify Server Foundation with Health Check",
+			"complexityScore": 4,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Split into: 1) Fastify server initialization with TypeScript, 2) Environment configuration and validation, 3) Health check endpoint and structured logging setup.",
+			"reasoning": "Standard web server setup with common middleware patterns. Moderate complexity from environment validation and logging configuration."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Azure Entra ID OIDC Authentication",
+			"complexityScore": 8,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down: 1) OIDC client setup with openid-client, 2) Login/callback/logout endpoint implementation, 3) Single vs multi-tenant mode handling, 4) Secure session management, 5) Azure AD group claims extraction.",
+			"reasoning": "Complex OAuth flows with multiple configuration modes, security-critical session handling, and external identity provider integration. High security risk."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Microsoft Graph API Integration for Group Sync",
+			"complexityScore": 7,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Divide into: 1) MSAL authentication setup, 2) Graph API client for group membership, 3) Group-to-department mapping logic, 4) Auto-department creation and error handling.",
+			"reasoning": "External API integration with rate limiting, complex mapping logic, database writes, and dependency on prior auth system. Moderate-to-high coupling complexity."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "OAuth 2.1 + PKCE Server Implementation",
+			"complexityScore": 9,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Split into: 1) OAuth metadata endpoint, 2) Dynamic client registration, 3) Authorize endpoint with PKCE, 4) Token endpoint with refresh rotation, 5) Revoke endpoint, 6) JWT signing and database storage, 7) Compliance testing.",
+			"reasoning": "Full OAuth 2.1 authorization server implementation with PKCE, multiple endpoints, security standards compliance (RFCs), and state management. Very high security and complexity."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Role-Based Access Control System",
+			"complexityScore": 8,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break into: 1) RBAC middleware development, 2) Role hierarchy definition, 3) Permission checking logic, 4) Role assignment from Azure groups, 5) Session and token authorization.",
+			"reasoning": "Complex permission model with hierarchy, scoping, inheritance, and integration across auth/session layers. High risk of access control bugs."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "MCP Proxy Infrastructure",
+			"complexityScore": 8,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Divide: 1) Proxy endpoint routing, 2) Token/permission validation, 3) MCP server forwarding, 4) Tool allowlist enforcement, 5) Caching implementation, 6) Error handling and logging.",
+			"reasoning": "Proxy architecture with auth, permissions, caching, allowlisting, and error resilience. Multiple cross-cutting concerns increase implementation complexity."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "M365 MCP Server Implementation",
+			"complexityScore": 9,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Split by feature: 1) Container/Dockerfile setup, 2) MS Graph OAuth flow, 3-7) Individual MCP tools (Mail, Calendar, Files, Teams, Directory), 8) Credential encryption and token refresh.",
+			"reasoning": "Multiple complex API integrations (5+ Graph endpoints), containerization, encryption, and OAuth. Very high integration and testing complexity."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Audit Logging System",
+			"complexityScore": 6,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down: 1) Audit middleware implementation, 2) Database storage and indexing, 3) Log viewer UI with filtering/export, 4) Retention policies and immutability.",
+			"reasoning": "Cross-cutting middleware with UI component, performance considerations for high-volume logging, and compliance requirements."
+		},
+		{
+			"taskId": 11,
+			"taskTitle": "Web UI Dashboard and Navigation",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Divide into: 1) Template engine setup, 2) Dashboard page implementation, 3) Navigation and auth integration.",
+			"reasoning": "Server-side rendering with basic UI. Moderate complexity from auth integration and responsive design."
+		},
+		{
+			"taskId": 12,
+			"taskTitle": "Institution Admin Panel",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Split by sections: 1) Overview/metrics, 2) Departments management, 3) Members management, 4) Servers control, 5) Tool access config, 6) Audit viewer/export.",
+			"reasoning": "Comprehensive CRUD admin interface with multiple complex features and RBAC integration."
+		},
+		{
+			"taskId": 13,
+			"taskTitle": "Department Management and Tool Access Control",
+			"complexityScore": 6,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break into: 1) Department admin UI, 2) Tool allowlist API/UI, 3) Member management, 4) Scoped audit viewing.",
+			"reasoning": "Scoped admin functionality building on prior admin panel. Moderate complexity with inheritance/override logic."
+		},
+		{
+			"taskId": 14,
+			"taskTitle": "Docker Compose Deployment Configuration",
+			"complexityScore": 4,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Divide: 1) docker-compose.yml services definition, 2) Lantern Dockerfile, 3) .env and networking/volume config.",
+			"reasoning": "Standard DevOps configuration following established Docker patterns. Low implementation risk."
+		},
+		{
+			"taskId": 15,
+			"taskTitle": "Multi-Tenant Support and Institution Registration",
+			"complexityScore": 9,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Split: 1) Multi-tenant mode flag handling, 2) Institution registration API, 3) RLS updates across all queries, 4) Isolation middleware, 5) Institution management, 6) Tenant-aware OAuth.",
+			"reasoning": "Architecturally complex multi-tenancy retrofit requiring RLS updates everywhere, isolation guarantees, and registration flows. Highest risk for data leakage."
+		}
+	]
+}
