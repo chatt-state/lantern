@@ -3,6 +3,7 @@ import { getAzureClient, buildAuthorizationUrl, generateAuthParams } from './azu
 import { getSession, setSession, clearSession } from './session.js';
 import { UserService } from './user-service.js';
 import { InstitutionService } from './institution-service.js';
+import { GroupSyncService } from '../graph/group-sync.js';
 import { config } from '../config.js';
 import type { Sql } from 'postgres';
 
@@ -80,6 +81,20 @@ export function authRoutes(sql: Sql) {
           name: claims.name as string | undefined,
           tid: azureTenantId,
         });
+
+        // Sync Azure AD groups → department memberships (non-blocking)
+        try {
+          const groupSync = new GroupSyncService(sql);
+          if (tokenSet.access_token) {
+            await groupSync.syncUserGroups({
+              userId: user.id,
+              institutionId: institution.id,
+              accessToken: tokenSet.access_token,
+            });
+          }
+        } catch (err) {
+          app.log.warn({ err }, 'Group sync failed — login continues');
+        }
 
         // Set authenticated session
         const newSession = {
