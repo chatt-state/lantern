@@ -64,14 +64,42 @@ export function authRoutes(sql: Sql) {
         }
 
         // Look up institution
-        const institution = await institutionService.findByTenantId(azureTenantId);
+        let institution = await institutionService.findByTenantId(azureTenantId);
 
         if (!institution) {
-          const msg = config.multiTenant
-            ? 'Institution not registered. Please contact your administrator.'
-            : 'Institution not registered';
-          return reply.status(403).send({ error: msg });
+          if (!config.multiTenant) {
+            return reply.status(401).send({
+              error: 'Institution not registered. Please configure AZURE_TENANT_ID.',
+            });
+          }
+
+          // Multi-tenant: auto-register the institution on first login
+          // Derive a reasonable institution name from the email domain or tenant ID
+          const email = (claims.email as string | undefined) ?? (claims.preferred_username as string | undefined) ?? '';
+          const domain = email.includes('@') ? email.split('@')[1] : azureTenantId;
+
+          console.log(`[multi-tenant] Auto-registering new institution for tenant ${azureTenantId} (domain: ${domain})`);
+
+          await sql`
+            INSERT INTO institutions (name, azure_tenant_id, domain, azure_client_id, azure_client_secret_enc, verified)
+            VALUES (${domain}, ${azureTenantId}, ${domain}, '', '', false)
+            ON CONFLICT (azure_tenant_id) DO NOTHING
+          `;
+
+          institution = await institutionService.findByTenantId(azureTenantId);
+
+          if (!institution) {
+            return reply.status(500).send({ error: 'Failed to register institution' });
+          }
+
+          console.log(`[multi-tenant] Registered institution ${institution.id} for tenant ${azureTenantId}`);
         }
+
+        // Check if this is the first user for this institution (will become admin)
+        const [existingUserCount] = await sql<[{ count: string }]>`
+          SELECT COUNT(*) AS count FROM users WHERE institution_id = ${institution.id}
+        `;
+        const isFirstUser = parseInt(existingUserCount.count, 10) === 0;
 
         // Upsert the user
         const user = await userService.upsertUser(institution.id, {
@@ -81,6 +109,15 @@ export function authRoutes(sql: Sql) {
           name: claims.name as string | undefined,
           tid: azureTenantId,
         });
+
+        // In multi-tenant mode, promote the first user of a new institution to admin
+        if (isFirstUser && config.multiTenant) {
+          await sql`
+            UPDATE users SET institution_admin = true WHERE id = ${user.id}
+          `;
+          user.institution_admin = true;
+          console.log(`[multi-tenant] Promoted first user ${user.id} to institution admin for ${institution.id}`);
+        }
 
         // Sync Azure AD groups → department memberships (non-blocking)
         try {

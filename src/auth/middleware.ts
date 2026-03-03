@@ -1,5 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { getSession } from './session.js';
+import { config } from '../config.js';
 import type { Sql } from 'postgres';
 
 export async function requireAuth(request: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -26,6 +27,17 @@ export async function requireInstitutionAdmin(
   }
   if (!session.institutionAdmin) {
     reply.status(403).send({ error: 'Institution admin role required' });
+  }
+}
+
+export function requireSuperadmin(request: FastifyRequest, reply: FastifyReply): void {
+  const session = getSession(request);
+  if (!session.userId) {
+    reply.redirect('/auth/login');
+    return;
+  }
+  if (!config.superadminEmails.includes(session.email ?? '')) {
+    reply.status(403).send({ error: 'Superadmin access required' });
   }
 }
 

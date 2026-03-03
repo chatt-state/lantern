@@ -16,6 +16,7 @@ export const config = {
   jwtSecret: optional('JWT_SECRET', ''),
   logLevel: optional('LOG_LEVEL', 'info') as 'debug' | 'info' | 'warn' | 'error',
   multiTenant: optional('MULTI_TENANT', 'false') === 'true',
+  superadminEmails: optional('SUPERADMIN_EMAILS', '').split(',').map((e) => e.trim()).filter(Boolean),
   // Azure SSO
   azureTenantId: optional('AZURE_TENANT_ID', ''),
   azureClientId: optional('AZURE_CLIENT_ID', ''),

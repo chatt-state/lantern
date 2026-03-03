@@ -18,6 +18,7 @@ import { webRoutes } from './web/routes.js';
 import { auditRoutes } from './audit/routes.js';
 import { adminRoutes } from './admin/routes.js';
 import { departmentRoutes } from './department/routes.js';
+import { superadminRoutes } from './superadmin/routes.js';
 
 const app = Fastify({
   logger: {
@@ -66,6 +67,9 @@ await app.register(adminRoutes(sql));
 
 // Department admin panel — member management, tool allowlists, dept audit log
 await app.register(departmentRoutes(sql));
+
+// Superadmin panel — multi-tenant management (SUPERADMIN_EMAILS)
+await app.register(superadminRoutes(sql));
 
 // MCP proxy — authenticated, sits at /v1/:server/mcp
 await app.register(proxyRoutes(sql));

@@ -2,7 +2,7 @@ import { globalStyles } from './styles.js';
 
 export interface LayoutOptions {
   title: string;
-  user: { displayName: string; email: string; institutionAdmin: boolean };
+  user: { displayName: string; email: string; institutionAdmin: boolean; superadmin?: boolean };
   currentPath: string;
   content: string;
 }
@@ -22,6 +22,7 @@ export function layout(opts: LayoutOptions): string {
           { href: '/settings/admin/audit', label: '↳ Audit Log', icon: '' },
         ]
       : []),
+    ...(user.superadmin ? [{ href: '/superadmin', label: 'Superadmin', icon: '🛡️' }] : []),
   ];
 
   const navHtml = navItems
