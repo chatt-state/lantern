@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: lantern
+      POSTGRES_USER: lantern
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lantern}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lantern"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - lantern-net
+    restart: unless-stopped
+
+  migrate:
+    build: .
+    command: npm run migrate
+    environment:
+      DATABASE_URL: postgres://lantern:${POSTGRES_PASSWORD:-lantern}@postgres:5432/lantern
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lantern-net
+    restart: "no"
+
+  lantern:
+    build: .
+    ports:
+      - "${PORT:-8080}:8080"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://lantern:${POSTGRES_PASSWORD:-lantern}@postgres:5432/lantern
+      HOST: 0.0.0.0
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+    networks:
+      - lantern-net
+    restart: unless-stopped
+
+  m365-mcp:
+    build:
+      context: .
+      dockerfile: src/servers/m365/Dockerfile
+    env_file: .env
+    depends_on:
+      lantern:
+        condition: service_healthy
+    networks:
+      - lantern-net
+    restart: unless-stopped
+
+networks:
+  lantern-net:
+    driver: bridge
+
+volumes:
+  pgdata:

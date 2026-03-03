@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Docker Compose deployment configuration (Task 14)
+  - `docker-compose.yml` — four-service stack: `postgres` (PostgreSQL 16 Alpine with health check), `migrate` (runs `npm run migrate` against postgres, exits cleanly), `lantern` (gateway; waits for migrate to complete), `m365-mcp` (internal-only MCP server; waits for lantern to be healthy)
+  - `docker-compose.dev.yml` — development overlay: exposes postgres on port 5432, overrides lantern command to `tsx watch` hot reload, sets `DEBUG=*` and `LOG_LEVEL=debug`
+  - `docs/deployment.md` — deployment guide covering prerequisites, quick start, Azure app registration, upgrades, and common troubleshooting steps
+  - Added `POSTGRES_PASSWORD` variable to `.env.example` for the managed postgres service
+
+### Added
 - Standalone M365 MCP server — Mail, Calendar, OneDrive, and Directory tools (Task 9)
   - `src/servers/m365/auth.ts` — AES-256-GCM credential encryption utilities (`encryptToken`, `decryptToken`) with per-user key derivation via `scryptSync`
   - `src/servers/m365/tools/mail.ts` — `listMail`, `getMail`, `searchMail`, `sendMail` via Microsoft Graph

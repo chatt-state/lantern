@@ -1,0 +1,16 @@
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  lantern:
+    build:
+      context: .
+      target: builder
+    command: npx tsx watch src/index.ts
+    volumes:
+      - ./src:/app/src:ro
+    environment:
+      DEBUG: "*"
+      NODE_ENV: development
+      LOG_LEVEL: debug
