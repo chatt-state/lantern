@@ -13,6 +13,7 @@ import { getDb, closeDb } from './db/index.js';
 import { authRoutes } from './auth/routes.js';
 import { metadataRoutes } from './oauth/metadata.js';
 import { oauthRoutes } from './oauth/routes.js';
+import { proxyRoutes } from './proxy/router.js';
 
 const app = Fastify({
   logger: {
@@ -49,6 +50,9 @@ await app.register(authRoutes(sql));
 // OAuth 2.1 + PKCE server (RFC 8414 metadata + RFC 7591 registration + token endpoints)
 await app.register(metadataRoutes());
 await app.register(oauthRoutes(sql));
+
+// MCP proxy — authenticated, sits at /v1/:server/mcp
+await app.register(proxyRoutes(sql));
 
 // Health check — unauthenticated
 app.get('/health', async () => {
