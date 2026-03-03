@@ -43,6 +43,7 @@
     "@fastify/formbody": "^8.0.2",
     "@fastify/rate-limit": "^10.3.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "fastify": "^5.7.4",
     "jsonwebtoken": "^9.0.3",
     "openid-client": "^5.7.1",
