@@ -29,6 +29,16 @@ const app = Fastify({
         ? { target: 'pino-pretty', options: { colorize: true } }
         : undefined,
   },
+  ignoreTrailingSlash: true,
+});
+
+// Azure AD SCIM sends Content-Type: application/scim+json — register before plugins
+app.addContentTypeParser('application/scim+json', { parseAs: 'string' }, (_req, body, done) => {
+  try {
+    done(null, JSON.parse(body as string));
+  } catch (err: unknown) {
+    done(Object.assign(new Error('Invalid JSON'), { statusCode: 400 }), undefined);
+  }
 });
 
 // ---------------------------------------------------------------------------

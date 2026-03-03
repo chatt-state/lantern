@@ -38,7 +38,7 @@ function scimUser(u: UserRow) {
     userName: u.email,
     displayName: u.display_name,
     active: u.active,
-    meta: { resourceType: 'User', location: `/scim/v2/Users/${u.id}` },
+    meta: { resourceType: 'User', location: `/scim/Users/${u.id}` },
   };
 }
 
@@ -49,7 +49,7 @@ function scimGroup(d: DeptRow, members: { value: string; display: string }[]) {
     externalId: d.external_id,
     displayName: d.name,
     members,
-    meta: { resourceType: 'Group', location: `/scim/v2/Groups/${d.id}` },
+    meta: { resourceType: 'Group', location: `/scim/Groups/${d.id}` },
   };
 }
 
@@ -65,7 +65,14 @@ export function scimRoutes(sql: Sql) {
     // Discovery (no auth)
     // -----------------------------------------------------------------------
 
-    app.get('/scim/v2/ServiceProviderConfig', async () => ({
+    // Root endpoint — Azure AD probes GET /scim for credential validation
+    app.get('/scim', async () => ({
+      schemas: ['urn:ietf:params:scim:api:messages:2.0:ListResponse'],
+      totalResults: 0,
+      Resources: [],
+    }));
+
+    app.get('/scim/ServiceProviderConfig', async () => ({
       schemas: ['urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig'],
       patch: { supported: true },
       bulk: { supported: false, maxOperations: 0, maxPayloadSize: 0 },
@@ -76,7 +83,7 @@ export function scimRoutes(sql: Sql) {
       authenticationSchemes: [{ type: 'oauthbearertoken', name: 'OAuth Bearer Token', description: 'Authentication via Bearer token' }],
     }));
 
-    app.get('/scim/v2/Schemas', async () => ({
+    app.get('/scim/Schemas', async () => ({
       schemas: ['urn:ietf:params:scim:api:messages:2.0:ListResponse'],
       totalResults: 2,
       Resources: [
@@ -85,7 +92,7 @@ export function scimRoutes(sql: Sql) {
       ],
     }));
 
-    app.get('/scim/v2/ResourceTypes', async () => ({
+    app.get('/scim/ResourceTypes', async () => ({
       schemas: ['urn:ietf:params:scim:api:messages:2.0:ListResponse'],
       totalResults: 2,
       Resources: [
@@ -98,7 +105,7 @@ export function scimRoutes(sql: Sql) {
     // Users (auth required)
     // -----------------------------------------------------------------------
 
-    app.get('/scim/v2/Users', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
+    app.get('/scim/Users', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
       const instId = request.scimInstitutionId!;
       const filter = parseFilter((request.query as { filter?: string }).filter);
 
@@ -113,7 +120,7 @@ export function scimRoutes(sql: Sql) {
       return listResponse(users.map(scimUser));
     });
 
-    app.get('/scim/v2/Users/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
+    app.get('/scim/Users/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
       const instId = request.scimInstitutionId!;
       const { id } = request.params as { id: string };
       const [user] = await sql<UserRow[]>`SELECT * FROM users WHERE id = ${id} AND institution_id = ${instId}`;
@@ -121,7 +128,7 @@ export function scimRoutes(sql: Sql) {
       return scimUser(user);
     });
 
-    app.post('/scim/v2/Users', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
+    app.post('/scim/Users', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
       const instId = request.scimInstitutionId!;
       const body = request.body as { externalId?: string; userName?: string; displayName?: string; active?: boolean };
       const externalId = body.externalId ?? '';
@@ -141,7 +148,7 @@ export function scimRoutes(sql: Sql) {
       return reply.status(201).send(scimUser(user));
     });
 
-    app.patch('/scim/v2/Users/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
+    app.patch('/scim/Users/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
       const instId = request.scimInstitutionId!;
       const { id } = request.params as { id: string };
       const body = request.body as { Operations?: { op: string; path?: string; value?: unknown }[] };
@@ -172,7 +179,7 @@ export function scimRoutes(sql: Sql) {
       return scimUser(updated);
     });
 
-    app.delete('/scim/v2/Users/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
+    app.delete('/scim/Users/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
       const instId = request.scimInstitutionId!;
       const { id } = request.params as { id: string };
       const [user] = await sql<{ id: string }[]>`SELECT id FROM users WHERE id = ${id} AND institution_id = ${instId}`;
@@ -195,7 +202,7 @@ export function scimRoutes(sql: Sql) {
       return rows.map((r) => ({ value: r.id, display: r.email }));
     }
 
-    app.get('/scim/v2/Groups', { preHandler: scimAuth }, async (request: FastifyRequest) => {
+    app.get('/scim/Groups', { preHandler: scimAuth }, async (request: FastifyRequest) => {
       const instId = request.scimInstitutionId!;
       const filter = parseFilter((request.query as { filter?: string }).filter);
 
@@ -212,7 +219,7 @@ export function scimRoutes(sql: Sql) {
       return listResponse(resources);
     });
 
-    app.get('/scim/v2/Groups/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
+    app.get('/scim/Groups/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
       const instId = request.scimInstitutionId!;
       const { id } = request.params as { id: string };
       const [dept] = await sql<DeptRow[]>`SELECT * FROM departments WHERE id = ${id} AND institution_id = ${instId}`;
@@ -220,7 +227,7 @@ export function scimRoutes(sql: Sql) {
       return scimGroup(dept, await getGroupMembers(dept.id));
     });
 
-    app.post('/scim/v2/Groups', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
+    app.post('/scim/Groups', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
       const instId = request.scimInstitutionId!;
       const body = request.body as { displayName?: string; externalId?: string; members?: { value: string }[] };
       const name = body.displayName ?? '';
@@ -253,7 +260,7 @@ export function scimRoutes(sql: Sql) {
       return reply.status(201).send(scimGroup(dept, await getGroupMembers(dept.id)));
     });
 
-    app.patch('/scim/v2/Groups/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
+    app.patch('/scim/Groups/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
       const instId = request.scimInstitutionId!;
       const { id } = request.params as { id: string };
       const body = request.body as { Operations?: { op: string; path?: string; value?: unknown }[] };
@@ -309,7 +316,7 @@ export function scimRoutes(sql: Sql) {
       return scimGroup(updated, await getGroupMembers(id));
     });
 
-    app.delete('/scim/v2/Groups/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
+    app.delete('/scim/Groups/:id', { preHandler: scimAuth }, async (request: FastifyRequest, reply: FastifyReply) => {
       const instId = request.scimInstitutionId!;
       const { id } = request.params as { id: string };
       const [dept] = await sql<{ id: string }[]>`SELECT id FROM departments WHERE id = ${id} AND institution_id = ${instId}`;
