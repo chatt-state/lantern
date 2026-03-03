@@ -867,7 +867,7 @@
           "10",
           "11"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -936,7 +936,8 @@
         ],
         "complexity": 7,
         "recommendedSubtasks": 6,
-        "expansionPrompt": "Split by sections: 1) Overview/metrics, 2) Departments management, 3) Members management, 4) Servers control, 5) Tool access config, 6) Audit viewer/export."
+        "expansionPrompt": "Split by sections: 1) Overview/metrics, 2) Departments management, 3) Members management, 4) Servers control, 5) Tool access config, 6) Audit viewer/export.",
+        "updatedAt": "2026-03-03T14:21:07.450Z"
       },
       {
         "id": "13",
@@ -1146,9 +1147,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-03T14:20:33.297Z",
+      "lastModified": "2026-03-03T14:21:07.450Z",
       "taskCount": 15,
-      "completedCount": 12,
+      "completedCount": 13,
       "tags": [
         "master"
       ]

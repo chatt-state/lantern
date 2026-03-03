@@ -30,17 +30,7 @@ export function webRoutes(sql: Sql) {
       );
     });
 
-    // GET /settings/department — department overview (stub for now)
-    app.get('/settings/department', async (request, reply) => {
-      const session = getSession(request);
-      if (!session.userId) return reply.redirect('/auth/login');
-      return reply
-        .type('text/html')
-        .send(
-          `<!DOCTYPE html><html><body><p>Department view coming soon. <a href="/settings">Back</a></p></body></html>`,
-        );
-    });
-
+    // Note: /settings/department and sub-routes are handled by departmentRoutes (src/department/routes.ts)
     // Note: /settings/admin and sub-routes are handled by adminRoutes (src/admin/routes.ts)
     // Note: /settings/admin/audit is handled by auditRoutes (src/audit/routes.ts)
   };

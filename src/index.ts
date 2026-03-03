@@ -17,6 +17,7 @@ import { proxyRoutes } from './proxy/router.js';
 import { webRoutes } from './web/routes.js';
 import { auditRoutes } from './audit/routes.js';
 import { adminRoutes } from './admin/routes.js';
+import { departmentRoutes } from './department/routes.js';
 
 const app = Fastify({
   logger: {
@@ -62,6 +63,9 @@ await app.register(auditRoutes(sql));
 
 // Institution admin panel — departments, members, servers, group mappings
 await app.register(adminRoutes(sql));
+
+// Department admin panel — member management, tool allowlists, dept audit log
+await app.register(departmentRoutes(sql));
 
 // MCP proxy — authenticated, sits at /v1/:server/mcp
 await app.register(proxyRoutes(sql));
