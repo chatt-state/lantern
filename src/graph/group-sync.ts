@@ -85,7 +85,9 @@ export class GroupSyncService {
       rolesApplied[deptName] = mapping.role;
     }
 
-    // Remove stale non-override memberships (departments where user no longer has a matching group)
+    // Remove stale non-override memberships (departments where user no longer has a matching group).
+    // Only clean up if we actually matched at least one mapping — if no group_mappings are
+    // configured, skip cleanup entirely to preserve SCIM-provisioned memberships.
     const mappedDeptIds = mappings.map((m) => m.department_id);
     if (mappedDeptIds.length > 0) {
       await this.sql`
@@ -93,11 +95,6 @@ export class GroupSyncService {
         WHERE user_id = ${userId}
           AND manual_override = false
           AND department_id NOT IN ${this.sql(mappedDeptIds)}
-      `;
-    } else {
-      await this.sql`
-        DELETE FROM user_departments
-        WHERE user_id = ${userId} AND manual_override = false
       `;
     }
 

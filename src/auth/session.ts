@@ -10,6 +10,7 @@ export interface LanternSession {
   // OAuth 2.1 flow state
   oauthState?: string;
   oauthCodeVerifier?: string;
+  oauthNonce?: string;
   pendingAuthSessionId?: string;
 }
 
@@ -32,7 +33,7 @@ export function setSession(reply: FastifyReply, session: LanternSession): void {
   const encoded = Buffer.from(JSON.stringify(session)).toString('base64');
   reply.setCookie(SESSION_COOKIE, encoded, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV !== 'development',
     sameSite: 'lax',
     maxAge: SESSION_MAX_AGE,
     path: '/',

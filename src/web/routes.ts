@@ -3,15 +3,18 @@ import type { Sql } from 'postgres';
 import { getSession } from '../auth/session.js';
 import { GroupSyncService } from '../graph/group-sync.js';
 import { dashboardPage } from './templates/dashboard.js';
+import { landingPage } from './templates/landing.js';
+import { config } from '../config.js';
 
 export function webRoutes(sql: Sql) {
   return async function (app: FastifyInstance) {
     const groupSync = new GroupSyncService(sql);
 
-    // Root redirect
+    // Root — show landing page for anonymous users, redirect to settings if logged in
     app.get('/', async (request, reply) => {
       const session = getSession(request);
-      return reply.redirect(session.userId ? '/settings' : '/auth/login');
+      if (session.userId) return reply.redirect('/settings');
+      return reply.type('text/html').send(landingPage({ baseUrl: config.baseUrl }));
     });
 
     // GET /settings — personal dashboard
