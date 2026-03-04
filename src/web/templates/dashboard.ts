@@ -15,6 +15,12 @@ const SERVERS = [
     description: 'Users, mailboxes, Teams, OneDrive, licensing, and security posture.',
     icon: `<svg viewBox="0 0 20 20" width="20" height="20" fill="none"><rect x="1" y="1" width="7.5" height="7.5" rx="1" fill="#f25022"/><rect x="11.5" y="1" width="7.5" height="7.5" rx="1" fill="#7fba00"/><rect x="1" y="11.5" width="7.5" height="7.5" rx="1" fill="#00a4ef"/><rect x="11.5" y="11.5" width="7.5" height="7.5" rx="1" fill="#ffb900"/></svg>`,
   },
+  {
+    slug: 'tdx',
+    name: 'TeamDynamix',
+    description: 'Tickets, knowledge base, assets, services, and staff directory.',
+    icon: `<svg viewBox="0 0 20 20" width="20" height="20" fill="none"><circle cx="10" cy="10" r="9" stroke="#2563eb" stroke-width="1.5"/><path d="M6 10h8M10 6v8" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  },
 ];
 
 export function dashboardPage(data: DashboardData): string {
@@ -114,8 +120,8 @@ export function dashboardPage(data: DashboardData): string {
 
       <div id="tab-code" class="tab-panel">
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Run in your terminal:</p>
-        <div class="code-block" id="code-config">${escHtml(`claude mcp add m365 --transport http ${baseUrl}/v1/m365/mcp`)}</div>
-        <button class="btn btn-ghost" style="font-size:12px;padding:6px 14px;margin-top:10px" onclick="copyText(document.getElementById('code-config').textContent, this, 'Copy command')">Copy command</button>
+        <div class="code-block" id="code-config">${escHtml(SERVERS.map((s) => `claude mcp add ${s.slug} --transport http ${baseUrl}/v1/${s.slug}/mcp`).join('\n'))}</div>
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 14px;margin-top:10px" onclick="copyText(document.getElementById('code-config').textContent, this, 'Copy commands')">Copy commands</button>
       </div>
     </div>
 
