@@ -104,13 +104,14 @@ export function authRoutes(sql: Sql) {
         `;
         const isFirstUser = parseInt(existingUserCount.count, 10) === 0;
 
-        // Upsert the user
+        // Upsert the user — sync institution_admin from Azure app roles if present
         const user = await userService.upsertUser(institution.id, {
           oid: azureOid,
           email: claims.email as string | undefined,
           preferred_username: claims.preferred_username as string | undefined,
           name: claims.name as string | undefined,
           tid: azureTenantId,
+          roles: claims.roles as string[] | undefined,
         });
 
         // In multi-tenant mode, promote the first user of a new institution to admin
