@@ -106,7 +106,18 @@ export async function resolveVendorHeaders(
   };
 }
 
-function computeMissingFields(
+/**
+ * Returns the array of REQUIRED field KEYS (not values) that are missing from
+ * the stored credentials. The output of this function is surfaced to the
+ * client via the reauth-sentinel `data.missing_fields` JSON-RPC error field.
+ *
+ * MUST return field keys (e.g. `'clientSecret'`), NEVER credential values.
+ * If implementation ever changes to include values, the leak-vector
+ * guarantee (scope §4 step 7 / Walter fold) breaks. The
+ * `computeMissingFields` test in `tests/resolve-vendor-headers.test.ts`
+ * pins this invariant.
+ */
+export function computeMissingFields(
   fields: Array<{ key: string; required: boolean }>,
   stored: Record<string, string> | null,
 ): string[] {
