@@ -14,6 +14,7 @@ import { authRoutes } from './auth/routes.js';
 import { metadataRoutes } from './oauth/metadata.js';
 import { oauthRoutes } from './oauth/routes.js';
 import { proxyRoutes } from './proxy/router.js';
+import { unifiedProxyRoutes } from './proxy/unified-router.js';
 import { webRoutes } from './web/routes.js';
 import { auditRoutes } from './audit/routes.js';
 import { adminRoutes } from './admin/routes.js';
@@ -85,8 +86,12 @@ await app.register(superadminRoutes(sql));
 // SCIM 2.0 provisioning bridge — Azure AD → departments/users
 await app.register(scimRoutes(sql));
 
-// MCP proxy — authenticated, sits at /v1/:server/mcp
+// MCP proxy (legacy per-vendor) — authenticated, sits at /v1/:server/mcp
 await app.register(proxyRoutes(sql));
+
+// MCP proxy (unified) — authenticated, sits at /v1/mcp; aggregates all vendors.
+// See src/proxy/unified-router.ts and AUDIT-2026-05-11 for the port rationale.
+await app.register(unifiedProxyRoutes(sql));
 
 // Health check — unauthenticated
 app.get('/health', async () => {
