@@ -246,11 +246,15 @@ export function unifiedProxyRoutes(sql: Sql) {
           const accessible = await getAccessibleVendors(sql, user.id, institutionId, deps.allowlistService);
           const merged: UpstreamTool[] = [];
           for (const { vendor, allowedTools } of accessible) {
-            const resolution = await resolveVendorHeaders(user.id, vendor.slug, {
+            const result = await resolveVendorHeaders(user.id, vendor.slug, {
               sql,
               institutionId,
             });
-            if (!resolution) continue;
+            // BYOC vendor without credentials, or unknown — silently skip in aggregation.
+            // Per scope doc §2.7 two-stage gate: reauth/missing-creds surfaces on tools/call,
+            // not as a fan-out failure on tools/list.
+            if (!result.ok) continue;
+            const { resolution } = result;
             const vendorUrl = `${resolution.containerUrl}${resolution.mcpPath}`;
             const tools = await fetchVendorTools(vendor.slug, vendorUrl, resolution.headers);
             for (const tool of tools) {
@@ -310,13 +314,34 @@ export function unifiedProxyRoutes(sql: Sql) {
             }
           }
 
-          const resolution = await resolveVendorHeaders(user.id, vendorSlug, {
+          const result = await resolveVendorHeaders(user.id, vendorSlug, {
             sql,
             institutionId,
           });
-          if (!resolution) {
+          if (!result.ok && 'reason' in result) {
             return reply.send(jsonRpcError(body.id, -32601, `Unknown vendor: ${vendorSlug}`));
           }
+          if (!result.ok && 'reauth' in result) {
+            await logAuditEntry(sql, {
+              institutionId,
+              userId: user.id,
+              departmentId: departmentId ?? undefined,
+              serverSlug: vendorSlug,
+              toolName,
+              method: 'POST',
+              statusCode: 401,
+              latencyMs: Date.now() - startTime,
+              error: 'reauth_required',
+            });
+            // Generic message — must not leak token/credential info per scope doc §4 step 7.
+            return reply.send(
+              jsonRpcError(body.id, -32000, `You need to connect ${vendorSlug} before using it`, {
+                reauth_url: `/settings/connections/${vendorSlug}/connect`,
+                missing_fields: result.missingFields,
+              }),
+            );
+          }
+          const { resolution } = result as { ok: true; resolution: { containerUrl: string; mcpPath: string; headers: Record<string, string> } };
           const vendorUrl = `${resolution.containerUrl}${resolution.mcpPath}`;
 
           // Forward the upstream call with the unprefixed tool name.
