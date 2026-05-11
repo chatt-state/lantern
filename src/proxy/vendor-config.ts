@@ -24,12 +24,56 @@ import { getM365Token } from '../auth/m365-token.js';
 /**
  * Per-vendor header-build context. The `userId` is already preHandler-verified —
  * `buildHeaders` MUST NOT re-verify the bearer or perform a second DB token lookup.
+ *
+ * For vendors with `oauthConfig` set, `credentials` will be populated with the
+ * decrypted per-user credential set BEFORE `buildHeaders` is called.
  */
 export interface VendorHeaderContext {
   userId: string;
   institutionId: string;
   sql: Sql;
   masterKey: string;
+  credentials?: Record<string, string>;
+}
+
+/**
+ * UI form-field schema for vendors with `oauthConfig` set. Drives the
+ * /settings/connections/<slug>/connect form.
+ */
+export interface VendorField {
+  key: string;
+  label: string;
+  required: boolean;
+  secret?: boolean;
+  placeholder?: string;
+  helpText?: string;
+}
+
+/**
+ * OAuth 2.0 client_credentials grant config for BYOC vendors. The Auth URL,
+ * Client ID, and Client Secret are all supplied per-user via the connect form;
+ * this config declares which `fields[]` keys hold which value, and which header
+ * the resulting bearer should be injected into.
+ *
+ * See scope doc §2.4 + §2.5 for the broader contract; this interface drives
+ * the OAuth client_credentials flow in `get-bearer-token.ts`.
+ */
+export interface OAuthClientCredsConfig {
+  /** Field key (from `VendorConfig.fields[]`) holding the per-key Auth URL. */
+  authUrlField: string;
+  /** Field key holding the client ID. */
+  clientIdField: string;
+  /** Field key holding the client secret. */
+  clientSecretField: string;
+  /**
+   * HTTP header name to inject into proxied requests. The value is built as
+   * `Bearer ${token}` (the convention for OAuth 2.0 client_credentials grants).
+   */
+  bearerHeader: string;
+  /**
+   * Refresh-when-fewer-than-this-many-seconds-of-TTL-remain. Defaults to 60.
+   */
+  refreshBufferSeconds?: number;
 }
 
 export interface VendorConfig {
@@ -59,6 +103,19 @@ export interface VendorConfig {
    * of the gateway's standard headers (X-Lantern-User-Id, X-Lantern-Institution-Id).
    */
   buildHeaders?: (ctx: VendorHeaderContext) => Promise<Record<string, string>>;
+  /**
+   * If set, this vendor is BYOC: per-user credentials are stored in
+   * `user_credentials` (entered via /settings/connections/<slug>/connect),
+   * decrypted at request time, and exchanged for a Bearer token via OAuth 2.0
+   * client_credentials grant.
+   *
+   * When set, `fields[]` MUST also be provided.
+   */
+  oauthConfig?: OAuthClientCredsConfig;
+  /**
+   * UI form-field schema for BYOC vendors. Required when `oauthConfig` is set.
+   */
+  fields?: VendorField[];
 }
 
 export const VENDORS: Record<string, VendorConfig> = {
@@ -82,6 +139,28 @@ export const VENDORS: Record<string, VendorConfig> = {
     slug: 'tdx',
     displayName: 'TeamDynamix',
     containerUrl: config.serverUrls.tdx,
+  },
+  'checkpoint-official': {
+    slug: 'checkpoint-official',
+    displayName: 'Check Point Cloud Infrastructure',
+    containerUrl: 'https://cloudinfra-gw.portal.checkpoint.com',
+    fields: [
+      {
+        key: 'authUrl',
+        label: 'Authentication URL',
+        required: true,
+        placeholder: 'https://cloudinfra-gw.portal.checkpoint.com/auth/external',
+        helpText: 'The per-key Authentication URL shown in your Check Point Infinity Portal when you create an API key. Non-recoverable — save it from the portal at key-creation time.',
+      },
+      { key: 'clientId', label: 'Client ID', required: true },
+      { key: 'clientSecret', label: 'Secret Key', required: true, secret: true },
+    ],
+    oauthConfig: {
+      authUrlField: 'authUrl',
+      clientIdField: 'clientId',
+      clientSecretField: 'clientSecret',
+      bearerHeader: 'Authorization',
+    },
   },
 };
 

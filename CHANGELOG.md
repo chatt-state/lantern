@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Check Point Cloud Infrastructure MCP (BYOC OAuth client_credentials)** — first BYOC vendor in lantern. Per-user OAuth client_credentials grant against Check Point Infinity Portal's per-key Authentication URL; credentials encrypted with the existing `MASTER_KEY` + AES-256-GCM pattern. See scope doc at `orgs/wyre/agents/lantern/memory/2026-05-11-checkpoint-byoc-extension-scope.md` (boss + Walter green-locked).
+  - `src/proxy/vendor-config.ts` — extended `VendorConfig` with optional `oauthConfig` + `fields[]`; behavior gated on `oauthConfig` being declared. Existing m365 + tdx entries unchanged. New `checkpoint-official` entry uses the BYOC path.
+  - `src/credentials/vendor-credentials.ts` — store/load/delete/has helpers for per-user vendor credentials. Reuses the existing `user_credentials` table (already JSON-in-ciphertext per migration 001_core_schema.cjs:99); no schema migration required. `refresh_data` + `expires_at` columns stay NULL for OAuth client_credentials BYOC vendors.
+  - `src/credentials/bearer-token-cache.ts` — in-process bearer-token cache with per-key promise-coalescing. N concurrent first-requests-after-miss = 1 vendor-side handshake.
+  - `src/credentials/get-bearer-token.ts` — mints OAuth client_credentials bearer via the per-user Auth URL; caches via `BearerTokenCache`.
+  - `src/proxy/resolve-vendor-headers.ts` — returns a discriminated `ResolveResult` union: `{ok, resolution}`, `{ok: false, reauth, missingFields, vendorSlug}`, or `{ok: false, reason: 'unknown_vendor'}`. BYOC vendors without credentials surface as reauth-sentinel (proxy returns JSON-RPC error with `data.reauth_url` + `data.missing_fields`).
+  - `src/connections/routes.ts` — `/settings/connections/<slug>/connect` GET (form) + POST (validate/encrypt/store/audit); `/settings/connections/<slug>/disconnect` POST. Three Walter-fold guards: GET requires `hasServerAccess` (403 if denied); POST re-checks `hasServerAccess` at creation time (closes the temp-access-orphan-creds race); reauth/error messages never leak token or credential info.
+  - `src/web/templates/dashboard.ts` — "Unified Endpoint" card surfaces `/v1/mcp` at the top of My Connections. BYOC vendors show "Connect" affordance when unconnected, "Connected" badge + "Manage" link when connected.
+  - Audit-log event types extended: `CONNECT`, `DISCONNECT` actions emitted on credential lifecycle. Proxy-request audit shape unchanged.
+  - 15 new tests (6 bearer-token-cache + 9 checkpoint-vendor). Full suite 98/98.
+
 - **Unified MCP endpoint `/v1/mcp`** — aggregates all vendors (m365, tdx) behind a single JSON-RPC route. Tool names are prefixed `{vendorSlug}__{toolName}` to namespace across vendors; allowlist filtering applies post-aggregation with prefix-aware lookup.
   - `src/proxy/vendor-config.ts` — `VendorConfig` interface and `VENDORS` table (single source of truth, simplified from mcp-gateway's pattern for the single-tenant higher-ed domain — no BYOC creds, no OAuth-per-vendor, no validate/fields hooks). Includes `splitPrefixedToolName` with split-once semantics (tool names can contain `__`).
   - `src/proxy/resolve-vendor-headers.ts` — replaces mcp-gateway's `injectCredentials` with a lantern-domain-correct shape. Takes already-verified userId from preHandler, returns `{headers, containerUrl}` via per-vendor `buildHeaders` hook. No internal bearer re-verification.

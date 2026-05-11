@@ -5,6 +5,8 @@ import { GroupSyncService } from '../graph/group-sync.js';
 import { dashboardPage } from './templates/dashboard.js';
 import { landingPage } from './templates/landing.js';
 import { config } from '../config.js';
+import { listVendors } from '../proxy/vendor-config.js';
+import { hasVendorCredentials } from '../credentials/vendor-credentials.js';
 
 export function webRoutes(sql: Sql) {
   return async function (app: FastifyInstance) {
@@ -24,11 +26,23 @@ export function webRoutes(sql: Sql) {
 
       const departments = await groupSync.getUserDepartments(session.userId);
 
+      // For each BYOC vendor (oauthConfig set), check whether this user has
+      // already connected. Drives the Connect/Manage affordance on the dashboard.
+      const byocVendors = listVendors().filter((v) => v.oauthConfig);
+      const connectedVendorSlugs = (
+        await Promise.all(
+          byocVendors.map(async (v) =>
+            (await hasVendorCredentials(sql, { userId: session.userId!, vendorSlug: v.slug })) ? v.slug : null,
+          ),
+        )
+      ).filter((s): s is string => s !== null);
+
       return reply.type('text/html').send(
         dashboardPage({
           session,
           departments,
           currentPath: '/settings',
+          connectedVendorSlugs,
         }),
       );
     });
