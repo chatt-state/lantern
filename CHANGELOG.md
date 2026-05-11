@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Unified MCP endpoint `/v1/mcp`** — aggregates all vendors (m365, tdx) behind a single JSON-RPC route. Tool names are prefixed `{vendorSlug}__{toolName}` to namespace across vendors; allowlist filtering applies post-aggregation with prefix-aware lookup.
+  - `src/proxy/vendor-config.ts` — `VendorConfig` interface and `VENDORS` table (single source of truth, simplified from mcp-gateway's pattern for the single-tenant higher-ed domain — no BYOC creds, no OAuth-per-vendor, no validate/fields hooks). Includes `splitPrefixedToolName` with split-once semantics (tool names can contain `__`).
+  - `src/proxy/resolve-vendor-headers.ts` — replaces mcp-gateway's `injectCredentials` with a lantern-domain-correct shape. Takes already-verified userId from preHandler, returns `{headers, containerUrl}` via per-vendor `buildHeaders` hook. No internal bearer re-verification.
+  - `src/proxy/unified-router.ts` — POST `/v1/mcp` JSON-RPC dispatch (initialize, tools/list aggregate, tools/call prefix-route, notifications/initialized no-op); GET `/v1/mcp` SSE heartbeat for mcp-remote.
+  - M365 per-user delegated token injection lifted from `src/proxy/router.ts` inline branch into the m365 entry's `buildHeaders` hook — preserves the per-vendor route's behavior unchanged; the unified route uses the hook.
+  - Legacy `/v1/:server/mcp` route stays live during transition. Clients can migrate at their own pace.
+  - No rate limiting on `/v1/mcp` — matches existing `/v1/*` behavior at HEAD `9caa423` (verified: `src/index.ts:51` registers rate-limit with `global: false`; only `/oauth` routes opt in).
+
 - **SCIM 2.0 Provisioning Bridge** — Azure AD Enterprise App pushes groups→departments and users automatically; 54 Technology Division staff provisioned on first sync
   - `migrations/004_scim.cjs` — adds `scim_tokens` table (hashed Bearer tokens for SCIM auth) and `external_id`/`active` columns on `departments`
   - `src/scim/middleware.ts` — SHA-256 Bearer token validation against `scim_tokens`, updates `last_used_at`
