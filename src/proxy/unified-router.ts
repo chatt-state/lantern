@@ -183,17 +183,16 @@ export function unifiedProxyRoutes(sql: Sql) {
   const userService = new UserService(sql);
   const deps: UnifiedDeps = { sql, allowlistService, userService };
 
+  const bearerAuth = requireBearerAuth(sql);
+
   return async function (app: FastifyInstance) {
-    // Apply Bearer auth to /v1/mcp specifically. The legacy /v1/:server/mcp
-    // route is registered separately with its own preHandler.
-    app.addHook('preHandler', async (request, reply) => {
-      // Scope this hook to the unified route only.
-      if (request.routeOptions?.url !== '/v1/mcp') return;
-      await requireBearerAuth(sql)(request as FastifyRequest & { tokenAuth?: TokenAuthResult }, reply);
-    });
+    // Bearer auth is wired as a route-level preHandler rather than a
+    // plugin-level hook with URL early-return. Same auth boundary, but the
+    // auth requirement is visibly colocated with each route's registration
+    // (Fastify-native shape — boss observation A, PR #1 review).
 
     // GET /v1/mcp — SSE heartbeat for mcp-remote clients.
-    app.get('/v1/mcp', async (request, reply) => {
+    app.get('/v1/mcp', { preHandler: bearerAuth }, async (request, reply) => {
       reply.raw.setHeader('Content-Type', 'text/event-stream');
       reply.raw.setHeader('Cache-Control', 'no-cache');
       reply.raw.setHeader('Connection', 'keep-alive');
@@ -207,7 +206,7 @@ export function unifiedProxyRoutes(sql: Sql) {
     });
 
     // POST /v1/mcp — JSON-RPC dispatch.
-    app.post('/v1/mcp', async (request, reply) => {
+    app.post('/v1/mcp', { preHandler: bearerAuth }, async (request, reply) => {
       const startTime = Date.now();
       const tokenAuth = (request as FastifyRequest & { tokenAuth?: TokenAuthResult }).tokenAuth;
       if (!tokenAuth) {
